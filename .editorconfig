@@ -1,0 +1,12 @@
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+charset = utf-8
+
+[*.{rb,rex}]
+indent_style = space
+indent_size = 4
+
+[{M,m}akefile]
+indent_style = tab
+
