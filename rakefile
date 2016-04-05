@@ -1,0 +1,19 @@
+task :default => "test"
+
+
+namespace "lexer" do
+    file "lib/lexer/lexer.rb" => "lib/lexer/lexer.rex" do
+        sh "rex --output-file lib/lexer/lexer.rb lib/lexer/lexer.rex"
+    end
+    task "test" => "lib/lexer/lexer.rb" do
+        sh "rspec --color test/lexer_spec.rb"
+    end
+    task "clean" do
+        rm "lib/lexer/lexer.rb"
+    end
+end
+
+task :test => ["lexer:test"]
+task :clean => ["lexer:clean"]
+
+
