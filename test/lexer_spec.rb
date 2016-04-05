@@ -1,4 +1,4 @@
-require_relative "../source/lexer/lexer.rb"
+require_relative "../lib/lexer/lexer.rb"
 
 describe "lexer" do
     it "tokenizes non-negative integers" do

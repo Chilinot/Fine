@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative "../source/lexer/lexer.rb"
+require_relative "../lib/lexer/lexer.rb"
 
 index = ARGV.index('-o')
 if index != nil
