@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+require_relative "../source/lexer/lexer.rb"
+
+index = ARGV.index('-o')
+if index != nil
+    puts ARGV[index+1]
+    ARGV.delete("-o")
+    ARGV.delete_at(index)
+end
+
+def main
+    if ARGV.length < 1
+        loop do
+            begin
+                print "> "
+                input = gets
+                exit unless input
+                show_tokens Lexer.new.tokenize input
+            rescue Lexer::LexicalError => e
+                puts e
+            rescue SignalException => e
+                exit
+            end
+        end
+    else
+        ARGV.each do |file|
+            begin
+                puts "file: #{file}"
+                show_tokens Lexer.new.tokenize_file file
+            rescue Lexer::LexicalError => e
+                puts e
+            end
+        end
+    end
+end
+
+def show_tokens tokens
+    tokens.each do |t|
+        puts "  " + t.inspect
+    end
+end
+
+main
