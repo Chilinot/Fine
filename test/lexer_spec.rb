@@ -70,6 +70,11 @@ describe "lexer" do
         expect {Lexer.new.tokenize("int a;\n/*\n  this is a comment\n\n*/int 42foo;") }.to raise_error(Lexer::LexicalError)
     end
 
+    it "handles unclosed multi-line comments" do
+        expect {Lexer.new.tokenize("/* this is an unclosed multi-line comment", true) }.to raise_error(Lexer::LexicalError)
+        expect {Lexer.new.tokenize("int a;\n //this is \n/* this is an unclosed multi-line comment", true) }.to raise_error(Lexer::LexicalError)
+    end
+
     it "handles comments that do not end with newline" do
         expect(Lexer.new.tokenize("// this is a comment")).to eq []
     end

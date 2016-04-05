@@ -13,6 +13,7 @@ macro
     DELIMITER                           (\(|\)|\[|\]|\{|\}|\,|\;)
 
     # Invalid tokens and errors
+    INVALID_COMMENT                     \/\*.*
     INVALID_CHAR                        '\w\w+'
     INVALID_ID                          \d+{IDENTIFIER}
     INVALID_TOKEN                       ({INVALID_ID}|{INVALID_CHAR})
@@ -21,6 +22,7 @@ macro
 rule
     {NEWLINE}                           { @current_line += 1; nil }
     {COMMENT}                           { @current_line += text.count "\n"; nil }
+    {INVALID_COMMENT}                   { raise LexicalError.new(@current_line, "unclosed comment |#{text}|") }
     {INVALID_TOKEN}                     { raise LexicalError.new(@current_line, "invalid token |#{text}|") }
     {WHITESPACE}
     {INT}                               { [:INT, text.to_i] }
