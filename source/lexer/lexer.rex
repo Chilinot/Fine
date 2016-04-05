@@ -5,7 +5,7 @@ macro
     IDENTIFIER                          [a-zA-Z_]\w*
     WHITESPACE                          \s+
     NEWLINE                             \n
-    COMMENT                             (\/\*[^\*\/]*\*\/|\/\/.*\n)
+    COMMENT                             (\/\*[^\*\/]*\*\/|\/\/.*(\n|\Z))
     KEYWORD                             (char|else|if|int|return|void|while)
     IDENTIFIER_STARTING_WITH_KEYWORD    {KEYWORD}\w+
     OR                                  \|\|

@@ -69,4 +69,8 @@ describe "lexer" do
     it "handles invalid tokens" do
         expect {Lexer.new.tokenize("int a;\n/*\n  this is a comment\n\n*/int 42foo;") }.to raise_error(Lexer::LexicalError)
     end
+
+    it "handles comments that do not end with newline" do
+        expect(Lexer.new.tokenize("// this is a comment")).to eq []
+    end
 end
