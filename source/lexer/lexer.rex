@@ -39,8 +39,6 @@ inner
         def initialize(line, error_message)
             @line = line
             @error_message = error_message
-            # Just print the error for now
-            puts to_s
         end
         def to_s
             "\nLexical error on line #{@line}: #{@error_message}"
