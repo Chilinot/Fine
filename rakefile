@@ -8,6 +8,7 @@ namespace "lexer" do
     task "test" => "lib/lexer/lexer.rb" do
         sh "rspec --color test/lexer_test.rb"
         sh "rspec --color test/lexer_quiet_test.rb"
+        sh "rspec --color test/lexer_incorrect_test.rb"
     end
     task "clean" do
         rm "lib/lexer/lexer.rb"
