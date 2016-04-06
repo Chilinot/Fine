@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require_relative "../lib/lexer/lexer.rb"
+require_relative "../lib/utils.rb"
 
 index = ARGV.index('-o')
 if index != nil
@@ -27,9 +28,15 @@ def main
         ARGV.each do |file|
             begin
                 puts "file: #{file}"
-                show_tokens Lexer.new.tokenize_file file
+                content = read_file file
+                show_tokens Lexer.new.tokenize content
+                puts
+            rescue EncodingError => e
+                puts "invalid file encoding"
+                puts
             rescue Lexer::LexicalError => e
                 puts e
+                puts
             end
         end
     end

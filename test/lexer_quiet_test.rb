@@ -1,10 +1,11 @@
 require_relative "../lib/lexer/lexer.rb"
+require_relative "../lib/utils.rb"
 
 describe "lexer" do
     def tokenize relative_path
-        # path = File.expand_path("../data/quiet/lexer/l01.c", __FILE__) # hack: the extra .. removes filename
-        absolute_path = __dir__ + "/data/#{relative_path}" #
-        Lexer.new.tokenize_file(absolute_path)
+        absolute_path = __dir__ + "/data/#{relative_path}"
+        content = read_file absolute_path
+        Lexer.new.tokenize content
     end
     it "quiet/l01.c" do
         expect(tokenize("quiet/lexer/l01.c")).to eq [[:KEYWORD, :int], [:IDENTIFIER, "main"], [:DELIMITER, "("], [:KEYWORD, :void], [:DELIMITER, ")"], [:DELIMITER, "{"], [:DELIMITER, ";"], [:DELIMITER, "}"]]

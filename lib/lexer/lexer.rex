@@ -41,7 +41,7 @@ inner
             @error_message = error_message
         end
         def to_s
-            "\nLexical error on line #{@line}: #{@error_message}"
+            "Lexical error on line #{@line}: #{@error_message}"
         end
     end
 
@@ -54,9 +54,5 @@ inner
         end
         puts tokens.to_s if show_tokens
         tokens
-    end
-
-    def tokenize_file filename, show_tokens=false
-        tokenize File.read(filename), show_tokens
     end
 end
