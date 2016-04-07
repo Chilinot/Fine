@@ -1,7 +1,7 @@
 class Lexer
 macro
-    INT                                 \d+
-    CHAR                                ('\w'|'\s'|'\\n')
+    INT_LITERAL                         \d+
+    CHAR_LITERAL                        ('\w'|'\s'|'\\n')
     IDENTIFIER                          [a-zA-Z_]\w*
     WHITESPACE                          \s+
     NEWLINE                             \n
@@ -25,13 +25,13 @@ rule
     {INVALID_COMMENT}                   { raise LexicalError.new(@current_line, "unclosed comment |#{text}|") }
     {INVALID_TOKEN}                     { raise LexicalError.new(@current_line, "invalid token |#{text}|") }
     {WHITESPACE}
-    {INT}                               { [:INT, text.to_i] }
-    {CHAR}                              { [:CHAR, text[1..-2]] }
+    {INT_LITERAL}                       { [:INT_LITERAL, text.to_i] }
+    {CHAR_LITERAL}                      { [:CHAR_LITERAL, text[1..-2]] }
     {IDENTIFIER_STARTING_WITH_KEYWORD}  { [:IDENTIFIER, text] }
-    {KEYWORD}                           { [:KEYWORD, text.to_sym] }
+    {KEYWORD}                           { [text.upcase.to_sym, text] }
     {IDENTIFIER}                        { [:IDENTIFIER, text] }
-    {OPERATOR}                          { [:OPERATOR, text] }
-    {DELIMITER}                         { [:DELIMITER, text] }
+    {OPERATOR}                          { [text, text] }
+    {DELIMITER}                         { [text, text] }
     {ERROR}                             { raise LexicalError.new(@current_line, "unrecognized token |#{text}|") }
 
 inner

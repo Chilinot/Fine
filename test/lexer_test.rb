@@ -2,10 +2,14 @@ require_relative "../lib/lexer/lexer.rb"
 
 describe "lexer" do
     it "tokenizes non-negative integers" do
-        expect(Lexer.new.tokenize("1 2 42 0 001")).to eq [[:INT, 1], [:INT, 2], [:INT, 42], [:INT, 0], [:INT, 1]]
+        expect(Lexer.new.tokenize("1 2 42 0 001")).to eq [[:INT_LITERAL, 1],
+                                                          [:INT_LITERAL, 2],
+                                                          [:INT_LITERAL, 42],
+                                                          [:INT_LITERAL, 0],
+                                                          [:INT_LITERAL, 1]]
     end
     it "tokenizes character literals" do
-        expect(Lexer.new.tokenize("'a' '1' '\\n'")).to eq [[:CHAR, "a"], [:CHAR, "1"], [:CHAR, "\\n"]]
+        expect(Lexer.new.tokenize("'a' '1' '\\n'")).to eq [[:CHAR_LITERAL, "a"], [:CHAR_LITERAL, "1"], [:CHAR_LITERAL, "\\n"]]
     end
     it "handles incorrect character literals" do
         expect {Lexer.new.tokenize("'foo'") }.to raise_error(Lexer::LexicalError)
@@ -31,40 +35,40 @@ describe "lexer" do
     end
 
     it "tokenizes keywords" do
-        expect(Lexer.new.tokenize("char else if int return void while")).to eq [[:KEYWORD, :char],
-                                                                                [:KEYWORD, :else],
-                                                                                [:KEYWORD, :if],
-                                                                                [:KEYWORD, :int],
-                                                                                [:KEYWORD, :return],
-                                                                                [:KEYWORD, :void],
-                                                                                [:KEYWORD, :while]]
+        expect(Lexer.new.tokenize("char else if int return void while")).to eq [[:CHAR, "char"],
+                                                                                [:ELSE, "else"],
+                                                                                [:IF, "if"],
+                                                                                [:INT, "int"],
+                                                                                [:RETURN, "return"],
+                                                                                [:VOID, "void"],
+                                                                                [:WHILE, "while"]]
     end
 
     it "tokenizes operators" do
-        expect(Lexer.new.tokenize("+-*/<><=>===!=&&||=!")).to eq [[:OPERATOR, "+"],
-                                                                               [:OPERATOR, "-"],
-                                                                               [:OPERATOR, "*"],
-                                                                               [:OPERATOR, "/"],
-                                                                               [:OPERATOR, "<"],
-                                                                               [:OPERATOR, ">"],
-                                                                               [:OPERATOR, "<="],
-                                                                               [:OPERATOR, ">="],
-                                                                               [:OPERATOR, "=="],
-                                                                               [:OPERATOR, "!="],
-                                                                               [:OPERATOR, "&&"],
-                                                                               [:OPERATOR, "||"],
-                                                                               [:OPERATOR, "="],
-                                                                               [:OPERATOR, "!"]]
+        expect(Lexer.new.tokenize("+-*/<><=>===!=&&||=!")).to eq [["+", "+"],
+                                                                  ["-", "-"],
+                                                                  ["*", "*"],
+                                                                  ["/", "/"],
+                                                                  ["<", "<"],
+                                                                  [">", ">"],
+                                                                  ["<=", "<="],
+                                                                  [">=", ">="],
+                                                                  ["==", "=="],
+                                                                  ["!=", "!="],
+                                                                  ["&&", "&&"],
+                                                                  ["||", "||"],
+                                                                  ["=", "="],
+                                                                  ["!", "!"]]
     end
     it "tokenizes delimiter" do
-        expect(Lexer.new.tokenize("()[]{},;")).to eq [[:DELIMITER, "("],
-                                                              [:DELIMITER, ")"],
-                                                              [:DELIMITER, "["],
-                                                              [:DELIMITER, "]"],
-                                                              [:DELIMITER, "{"],
-                                                              [:DELIMITER, "}"],
-                                                              [:DELIMITER, ","],
-                                                              [:DELIMITER, ";"]]
+        expect(Lexer.new.tokenize("()[]{},;")).to eq [["(", "("],
+                                                      [")", ")"],
+                                                      ["[", "["],
+                                                      ["]", "]"],
+                                                      ["{", "{"],
+                                                      ["}", "}"],
+                                                      [",", ","],
+                                                      [";", ";"]]
     end
     it "handles invalid tokens" do
         expect {Lexer.new.tokenize("int a;\n/*\n  this is a comment\n\n*/int 42foo;") }.to raise_error(Lexer::LexicalError)
