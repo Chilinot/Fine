@@ -13,7 +13,7 @@ right "=" # 2R
 preclow
 
 # ---- [token declearations] -------------------------------------------
-token IDENTIFIER KEYWORD OPERATOR
+token IDENTIFIER
 token CHAR ELSE IF INT RETURN VOID WHILE
 token INT_LITERAL CHAR_LITERAL
 # ---- [expected number of S/R conflict] -------------------------------
