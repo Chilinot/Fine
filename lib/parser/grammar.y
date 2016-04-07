@@ -23,8 +23,7 @@ token INT_LITERAL CHAR_LITERAL
 start program
 # ---- [grammar] -------------------------------------------------------
 rule
-    program : /* empty program */
-            | topdec_list
+    program : topdec_list
 
     topdec_list : /* empty */
                 | topdec topdec_list
