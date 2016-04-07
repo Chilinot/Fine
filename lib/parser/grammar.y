@@ -59,15 +59,16 @@ rule
     stmts : /* empty */
           | stmt stmts
 
-
     stmt : expr ";"
          | RETURN expr ";" | RETURN ";"
-         | WHILE condition stmt
-         | IF condition stmt else_part
-         | "{" stmts "}"
+         | WHILE condition block
+         | IF condition block ELSE block
+         | IF condition block
+         | block
          | ";"
 
-    else_part : /* empty */ | ELSE stmt
+    block : "{" stmts "}"
+
     condition : "(" expr ")"
 
     expr : INT_LITERAL
