@@ -71,25 +71,22 @@ rule
     expr : INT_LITERAL
          | IDENTIFIER
          | IDENTIFIER "[" expr "]"
-         | unop expr
-         | expr binop expr
+         | "-" expr
+         | "!" expr
+         | expr "+" expr
+         | expr "-" expr
+         | expr "*" expr
+         | expr "/" expr
+         | expr "<" expr
+         | expr ">" expr
+         | expr "<=" expr
+         | expr ">=" expr
+         | expr "!=" expr
+         | expr "==" expr
+         | expr "&&" expr
+         | expr "=" expr
          | IDENTIFIER "(" actuals ")"
          | "(" expr ")"
-
-    unop : "-"
-         | "!"
-    binop : "+"
-          | "-"
-          | "*"
-          | "/"
-          | "<"
-          | ">"
-          | "<="
-          | ">="
-          | "!="
-          | "=="
-          | "&&"
-          | "="
 
     actuals : /* empty */
             | expr_list
