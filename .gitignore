@@ -1,2 +1,4 @@
 # ignore generated files
 lib/lexer/lexer.rb
+lib/parser/parser.rb
+lib/parser/parser.output
