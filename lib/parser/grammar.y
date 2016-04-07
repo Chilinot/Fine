@@ -17,19 +17,21 @@ token IDENTIFIER KEYWORD OPERATOR
 token CHAR ELSE IF INT RETURN VOID WHILE
 token INT_LITERAL CHAR_LITERAL
 # ---- [expected number of S/R conflict] -------------------------------
+# expect 1
 # ---- [options] -------------------------------------------------------
 # ---- [semantic value convertion] -------------------------------------
 # ---- [start rule] ----------------------------------------------------
 start program
 # ---- [grammar] -------------------------------------------------------
 rule
+
     program : topdec_list
 
     topdec_list : /* empty */
                 | topdec topdec_list
 
-    topdec : vardec ";"
-           | funtype IDENTIFIER "(" formals ")" funbody
+    topdec : typename IDENTIFIER "(" formals ")" funbody
+           | vardec ";"
 
     vardec : scalardec
            | arraydec
@@ -39,8 +41,8 @@ rule
 
     typename : INT
              | CHAR
+             | VOID
 
-    funtype : typename | VOID
     funbody : "{" locals stmts "}" | ";"
 
     formals : VOID | formal_list
