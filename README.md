@@ -1,2 +1,2 @@
-# Fine
-The Fine programming language.
+# uC
+The uC programming language.
