@@ -25,69 +25,92 @@ start program
 # ---- [grammar] -------------------------------------------------------
 rule
 
-    program : topdec_list
+    program : topdec_list                                   { result = Program.new(val[0]) }
 
-    topdec_list : /* empty */
-                | topdec topdec_list
+    topdec_list : /* empty */                               { result = [] }
+                | topdec topdec_list                        { result = val[1].unshift(val[0]) }
 
-    topdec : typename IDENTIFIER "(" formals ")" funbody
+    topdec : typename IDENTIFIER "(" formals ")" funbody    { case val[5]
+                                                                when :empty then result = ExternFunctionDeclaration.new(val[0], val[1], val[3])
+                                                                else result = FunctionDeclaration.new(val[0], val[1], val[3], val[5])
+                                                              end }
            | vardec ";"
 
     vardec : scalardec
            | arraydec
 
-    scalardec : typename IDENTIFIER
-    arraydec  : typename IDENTIFIER "[" INT_LITERAL "]"
+    scalardec : typename IDENTIFIER                         { if val[0] != :VOID
+                                                                result = VarDeclaration.new(val[0], val[1])
+                                                              else
+                                                                  raise SyntaxError.new("unknown", "variable #{val[1]} can not be of type void")
+                                                              end }
 
-    typename : INT
-             | CHAR
-             | VOID
+    arraydec  : typename IDENTIFIER "[" INT_LITERAL "]"     { if val[0] != :VOID
+                                                                result = ArrayDeclaration.new(val[0], val[1], val[3])
+                                                              else
+                                                                  raise SyntaxError.new("unknown", "Array #{val[1]} can not be of type void")
+                                                              end }
 
-    funbody : "{" locals stmts "}" | ";"
 
-    formals : VOID | formal_list
+    typename : INT                                          { result = val[0].upcase.to_sym }
+             | CHAR                                         { result = val[0].upcase.to_sym }
+             | VOID                                         { result = val[0].upcase.to_sym }
 
-    formal_list : formaldec
-                | formaldec "," formal_list
+    funbody : "{" locals stmts "}"                          { result = FunctionBody.new(val[1], val[2]) }
+            | ";"                                           { result = :empty }
+
+    formals : /* empty */                                   { result = [] }
+            | VOID                                          { result = [] }
+            | formal_list                                   { result = val[0] }
+
+    formal_list : formaldec                                 { result = [val[0]] }
+                | formaldec "," formal_list                 { result = val[2].unshift(val[0]) }
 
     formaldec : scalardec
-              | typename IDENTIFIER "[" "]"
+              | typename IDENTIFIER "[" "]"                 { if val[0] != :VOID
+                                                                result = ArrayDeclaration.new(val[0], val[1])
+                                                              else
+                                                                  raise SyntaxError.new("unknown", "Array #{val[1]} can not be of type void")
+                                                              end }
 
-    locals : /* empty */
-           | vardec ";" locals
 
-    stmts : /* empty */
-          | stmt stmts
+    locals : /* empty */                                    { result = [] }
+           | vardec ";" locals                              { result = val[2].unshift(val[0]) }
+
+    stmts : /* empty */                                     { result = [] }
+          | ";" stmts                                       { result = val[1] }
+          | stmt stmts                                      { result = val[1].unshift(val[0]) }
 
     stmt : expr ";"
-         | RETURN expr ";" | RETURN ";"
+         | RETURN expr ";"
+         | RETURN ";"
          | WHILE condition block
          | IF condition block ELSE block
          | IF condition block
          | block
-         | ";"
 
     block : "{" stmts "}"
 
     condition : "(" expr ")"
 
-    expr : INT_LITERAL
-         | IDENTIFIER
-         | IDENTIFIER "[" expr "]"
-         | "-" expr
-         | "!" expr
-         | expr "+" expr
-         | expr "-" expr
-         | expr "*" expr
-         | expr "/" expr
-         | expr "<" expr
-         | expr ">" expr
-         | expr "<=" expr
-         | expr ">=" expr
-         | expr "!=" expr
-         | expr "==" expr
-         | expr "&&" expr
-         | expr "=" expr
+    expr : INT_LITERAL                                      { result = Constant.new(:INT, val[0]) }
+         | CHAR_LITERAL                                     { result = Constant.new(:CHAR, val[0]) }
+         | IDENTIFIER                                       { result = Identifier.new(val[0]) }
+         | IDENTIFIER "[" expr "]"                          { result = ArrayLookup.new(val[0], val[2])  }
+         | "-" expr                                         { result = UnaryMinus.new(val[1]) }
+         | "!" expr                                         { result = Not.new(val[1]) }
+         | expr "+" expr                                    { result = AddNode.new(val[0], val[2]) }
+         | expr "-" expr                                    { result = SubNode.new(val[0], val[2]) }
+         | expr "*" expr                                    { result = MulNode.new(val[0], val[2]) }
+         | expr "/" expr                                    { result = DivNode.new(val[0], val[2]) }
+         | expr "<" expr                                    { result = LessThanNode.new(val[0], val[2]) }
+         | expr ">" expr                                    { result = GreaterThanNode.new(val[0], val[2]) }
+         | expr "<=" expr                                   { result = LessEqualNode.new(val[0], val[2]) }
+         | expr ">=" expr                                   { result = GreaterEqualNode.new(val[0], val[2]) }
+         | expr "!=" expr                                   { result = NotEqualNode.new(val[0], val[2]) }
+         | expr "==" expr                                   { result = EqualNode.new(val[0], val[2]) }
+         | expr "&&" expr                                   { result = AndNode.new(val[0], val[2]) }
+         | expr "=" expr                                    { result = AssignNode.new(val[0], val[2]) }
          | IDENTIFIER "(" actuals ")"
          | "(" expr ")"
 
@@ -101,9 +124,19 @@ end
 # ---- [header] --------------------------------------------------------
 ---- header
 require_relative "../lexer/lexer.rb"
+require_relative "../parser/nodes.rb"
 
 # ---- [inner] ---------------------------------------------------------
 ---- inner
+class SyntaxError < StandardError
+    def initialize(line, error_message)
+        @line = line
+        @error_message = error_message
+    end
+    def to_s
+        "syntax error on line #{@line}: #{@error_message}"
+    end
+end
 def parse code, show_tokens=false
     @tokens = Lexer.new.tokenize code
     puts @tokens.inspect if show_tokens
