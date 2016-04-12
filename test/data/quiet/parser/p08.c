@@ -4,7 +4,7 @@ int main(void){
   int x;
   int y;
 
-  if(x) 
-    if (y) x = 4711;
-    else x=42;
+  if(x) {
+    if (y) { x = 4711; }
+    else { x=42; }}
 }
