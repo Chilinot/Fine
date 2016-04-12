@@ -6,3 +6,7 @@ def read_file filename
         raise EncodingError.new
     end
 end
+
+def ast_to_string str
+    str.gsub(/#<struct /, "\n(").gsub(">", ")").gsub(",", "").gsub("[", "\n").gsub("]", "")
+end

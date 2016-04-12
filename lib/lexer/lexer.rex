@@ -25,13 +25,14 @@ rule
     {INVALID_COMMENT}                   { raise LexicalError.new(@current_line, "unclosed comment |#{text}|") }
     {INVALID_TOKEN}                     { raise LexicalError.new(@current_line, "invalid token |#{text}|") }
     {WHITESPACE}
-    {INT_LITERAL}                       { [:INT_LITERAL, text.to_i] }
-    {CHAR_LITERAL}                      { [:CHAR_LITERAL, text[1..-2]] }
-    {IDENTIFIER_STARTING_WITH_KEYWORD}  { [:IDENTIFIER, text] }
-    {KEYWORD}                           { [text.upcase.to_sym, text] }
-    {IDENTIFIER}                        { [:IDENTIFIER, text] }
-    {OPERATOR}                          { [text, text] }
-    {DELIMITER}                         { [text, text] }
+    {INT_LITERAL}                       { [:INT_LITERAL, make_token(text.to_i)] }
+    {CHAR_LITERAL}                      { [:CHAR_LITERAL, make_token(text[1..-2])] }
+    {IDENTIFIER_STARTING_WITH_KEYWORD}  { [:IDENTIFIER, make_token(text)] }
+    {KEYWORD}                           { [text.upcase.to_sym, make_token(text)] }
+    {IDENTIFIER}                        { [:IDENTIFIER, make_token(text)] }
+    \)                                  { [")", make_token(text)] }
+    {OPERATOR}                          { [text, make_token(text)] }
+    {DELIMITER}                         { [text, make_token(text)] }
     {ERROR}                             { raise LexicalError.new(@current_line, "unrecognized token |#{text}|") }
 
 inner
@@ -44,7 +45,17 @@ inner
             "Lexical error on line #{@line}: #{@error_message}"
         end
     end
-
+    class Token < Struct.new(:line, :value)
+        def == v
+            value == v
+        end
+        def inspect
+            "on line #{line} error on value \"#{value}\"|||"
+        end
+    end
+    def make_token value
+        Token.new(@lineno, value)
+    end
     def tokenize code, show_tokens=false
         @current_line = 1
         scan_setup(code)

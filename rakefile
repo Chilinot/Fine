@@ -21,6 +21,8 @@ namespace "parser" do
     end
     task "test" => "lib/parser/parser.rb" do
         sh "rspec --color test/parser_test.rb"
+        sh "rspec --color test/parser_quiet_test.rb"
+        sh "rspec --color test/parser_incorrect_test.rb"
     end
     task "clean" do
         rm "lib/parser/parser.rb"

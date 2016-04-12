@@ -74,6 +74,9 @@ describe "parse" do
     it "parses functions with a unary minus" do
         expect(Parser.new.parse("void foo(){ -42; }")).to eq make_foo_fn([], [UnaryMinus.new(Constant.new(:INT, 42))])
     end
+    it "parses functions with a unary minus" do
+        expect(Parser.new.parse("void foo(){ 42--42; }")).to eq make_foo_fn([], [SubNode.new(Constant.new(:INT, 42), UnaryMinus.new(Constant.new(:INT, 42)))])
+    end
     it "parses functions with a not expression" do
         expect(Parser.new.parse("void foo(){ !42; }")).to eq make_foo_fn([], [Not.new(Constant.new(:INT, 42))])
     end
@@ -112,6 +115,48 @@ describe "parse" do
     end
     it "parses functions with AssignNode" do
         expect(Parser.new.parse("void foo(){ foo = bar; }")).to eq make_foo_fn([], [AssignNode.new(Identifier.new("foo"), Identifier.new("bar"))])
+    end
+    it "parses functions with multiple AndNodes" do
+        expect(Parser.new.parse("void foo(){ foo && bar && 42; }")).to eq make_foo_fn([], [AndNode.new(AndNode.new(Identifier.new("foo"), Identifier.new("bar")), Constant.new(:INT, 42))])
+    end
+    it "parses functions with parenthesized expressions" do
+        expect(Parser.new.parse("void foo(){ (foo + bar); }")).to eq make_foo_fn([], [AddNode.new(Identifier.new("foo"), Identifier.new("bar"))])
+    end
+    it "parses functions with function call without arguments" do
+        expect(Parser.new.parse("void foo(){ foo(); }")).to eq make_foo_fn([], [FunctionCall.new("foo",[])])
+    end
+    it "parses functions with function call single argument" do
+        expect(Parser.new.parse("void foo(){ foo(42); }")).to eq make_foo_fn([], [FunctionCall.new("foo",[Constant.new(:INT, 42)])])
+    end
+    it "parses functions with function call multiple arguments" do
+        expect(Parser.new.parse("void foo(){ foo(42, bar); }")).to eq make_foo_fn([], [FunctionCall.new("foo",[Constant.new(:INT, 42), Identifier.new("bar")])])
+    end
+    it "parses functions with empty return statment" do
+        expect(Parser.new.parse("void foo(){ return; }")).to eq make_foo_fn([], [Return.new])
+    end
+    it "parses functions with return statment with expr" do
+        expect(Parser.new.parse("void foo(){ return 42; }")).to eq make_foo_fn([], [Return.new(Constant.new(:INT, 42))])
+    end
+    it "parses functions with while statment" do
+        expect(Parser.new.parse("void foo(){ while (foo) { bar; } }")).to eq make_foo_fn([], [While.new(Identifier.new("foo"), [Identifier.new("bar")])])
+    end
+    it "parses functions with simple if statment" do
+        expect(Parser.new.parse("void foo(){ if (foo) { bar; } }")).to eq make_foo_fn([], [If.new(Identifier.new("foo"), [Identifier.new("bar")])])
+    end
+    it "parses functions with if else statment" do
+        expect(Parser.new.parse("void foo(){ if (foo) { bar; } else { return; } }")).to eq make_foo_fn([], [If.new(Identifier.new("foo"), [Identifier.new("bar")], [Return.new])])
+    end
+    it "parses functions with if else if" do
+        expect(Parser.new.parse("void foo(){ if (foo) { bar; } else if (bar) { return; } }")).to eq make_foo_fn([],
+        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new])])])
+    end
+    it "parses functions with if else if else" do
+        expect(Parser.new.parse("void foo(){ if (foo) { bar; } else if (bar) { return; } else { ; } }")).to eq make_foo_fn([],
+        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new], [])])])
+    end
+    it "parses functions with if else if else" do
+        expect(Parser.new.parse("void foo(){ if (foo) { bar; } else if (bar) { return; } else if (bar) { return; } else if (bar) { return; } else { ; } }")).to eq make_foo_fn([],
+        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new], [If.new(Identifier.new("bar"), [Return.new], [If.new(Identifier.new("bar"), [Return.new], [])])])])])
     end
 end
 
