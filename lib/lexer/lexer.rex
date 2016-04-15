@@ -49,6 +49,7 @@ inner
         def == v
             value == v
         end
+        def to_s; "#{value}" end
         def inspect
             "on line #{line} error on value \"#{value}\"|||"
         end

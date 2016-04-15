@@ -42,13 +42,13 @@ rule
     scalardec : typename IDENTIFIER                         { if val[0] != :VOID
                                                                 result = VarDeclaration.new(val[0], val[1].value)
                                                               else
-                                                                  raise SyntaxError.new("unknown", "variable #{val[1]} can not be of type void")
+                                                                  raise SyntaxError.new(val[1].line, "variable #{val[1]} can not be of type void")
                                                               end }
 
     arraydec  : typename IDENTIFIER "[" INT_LITERAL "]"     { if val[0] != :VOID
                                                                 result = ArrayDeclaration.new(val[0], val[1].value, val[3].value)
                                                               else
-                                                                  raise SyntaxError.new("unknown", "Array #{val[1].value} can not be of type void")
+                                                                  raise SyntaxError.new(val[1].line, "Array #{val[1].value} can not be of type void")
                                                               end }
 
 
@@ -70,7 +70,7 @@ rule
               | typename IDENTIFIER "[" "]"                 { if val[0] != :VOID
                                                                 result = ArrayDeclaration.new(val[0], val[1].value)
                                                               else
-                                                                  raise SyntaxError.new("unknown", "Array #{val[1].value} can not be of type void")
+                                                                  raise SyntaxError.new(val[1].line, "Array #{val[1].value} can not be of type void")
                                                               end }
 
 
