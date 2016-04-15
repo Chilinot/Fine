@@ -11,6 +11,7 @@ def main
                 print "> "
                 input = gets
                 exit unless input
+                exit if input.chomp == ":q"
                 show_tokens Lexer.new.tokenize input
             rescue Lexer::LexicalError => e
                 puts e
@@ -38,7 +39,7 @@ end
 
 def show_tokens tokens
     tokens.each do |t|
-        puts "  " + t.inspect
+        puts "  " + [t[0], t[1].value].inspect
     end
 end
 
