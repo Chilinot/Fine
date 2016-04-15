@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+require_relative "../lib/parser/parser.rb"
+require_relative "../lib/utils.rb"
+
+def main
+    if ARGV.length < 1
+        loop do
+            begin
+                print "> "
+                input = gets
+                exit unless input
+                exit if input.chomp == ":q"
+                show_abstract_syntax_tree Parser.new.parse input
+            rescue Lexer::LexicalError => e
+                puts e
+            rescue Parser::SyntaxError => e
+                puts e
+            rescue SignalException => e
+                exit
+            end
+        end
+    else
+        ARGV.each do |file|
+            begin
+                puts "file: #{file}"
+                content = read_file file
+                show_abstract_syntax_tree Parser.new.parse content
+                puts
+            rescue EncodingError => e
+                puts "invalid file encoding"
+                puts
+            rescue Lexer::LexicalError => e
+                puts e
+                puts
+            rescue Parser::SyntaxError => e
+                puts e
+                puts
+            end
+        end
+    end
+end
+
+def show_abstract_syntax_tree ast
+    puts (ast_to_string ast.to_s).gsub(/\n/, "\n  ")
+end
+
+main
