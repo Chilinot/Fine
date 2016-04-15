@@ -8,5 +8,6 @@ def read_file filename
 end
 
 def ast_to_string str
-    str.gsub(/#<struct /, "\n(").gsub(">", ")").gsub(",", "").gsub("[", "\n").gsub("]", "")
+    # str.gsub(/#<struct /, "\n(").gsub(">", ")").gsub(",", "").gsub("[", "\n").gsub("]", "")
+    str.gsub(/#<struct /, "\n<").gsub(",", "").gsub("[", "[").gsub("]", "]\n")
 end

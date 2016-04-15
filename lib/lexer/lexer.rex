@@ -51,7 +51,7 @@ inner
         end
         def to_s; "#{value}" end
         def inspect
-            "on line #{line} error on value \"#{value}\"|||"
+            "on line #{line} unexpected token \"#{value}\"|||"
         end
     end
     def make_token value

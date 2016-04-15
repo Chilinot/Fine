@@ -59,11 +59,11 @@ rule
     funbody : "{" locals stmts "}"                          { result = FunctionBody.new(val[1], val[2]) }
             | ";"                                           { result = :empty }
 
-    formals : /* empty */                                   { result = [] }
-            | VOID                                          { result = [] }
+    formals : VOID                                          { result = [] }
             | formal_list                                   { result = val[0] }
 
-    formal_list : formaldec                                 { result = [val[0]] }
+    formal_list : ")"                                       { raise SyntaxError.new(val[0].line, "expected void or parameters, but got \")\"") }
+                | formaldec                                 { result = [val[0]] }
                 | formaldec "," formal_list                 { result = val[2].unshift(val[0]) }
 
     formaldec : scalardec
@@ -99,7 +99,8 @@ rule
 
     block : "{" stmts "}"                                   { result = val[1] }
 
-    condition : "(" expr ")"                                { result = val[1] }
+    condition : "(" ")"                                     { raise SyntaxError.new(val[1].line, "expected condition, but found \")\"") }
+              | "(" expr ")"                                { result = val[1] }
 
     expr : INT_LITERAL                                      { result = Constant.new(:INT, val[0].value) }
          | CHAR_LITERAL                                     { result = Constant.new(:CHAR, val[0].value) }
@@ -126,6 +127,7 @@ rule
             | expr_list                                     { result = val[0] }
 
     expr_list : expr                                        { result = [val[0]] }
+              | expr "," ")"                                { raise SyntaxError.new(val[2].line, "expected expression, but found \")\"")  }
               | expr "," expr_list                          { result = val[2].unshift(val[0]) }
 
 end
