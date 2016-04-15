@@ -3,12 +3,6 @@
 require_relative "../lib/lexer/lexer.rb"
 require_relative "../lib/utils.rb"
 
-index = ARGV.index('-o')
-if index != nil
-    puts ARGV[index+1]
-    ARGV.delete("-o")
-    ARGV.delete_at(index)
-end
 
 def main
     if ARGV.length < 1
