@@ -140,7 +140,6 @@ class SyntaxError < StandardError
     def initialize(line, error_message)
         @line = line
         @error_message = error_message
-        puts self
     end
     def to_s
         "syntax error on line #{@line}: #{@error_message}"
