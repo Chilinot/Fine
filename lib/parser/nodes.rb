@@ -7,11 +7,29 @@ class ExternFunctionDeclaration < Struct.new(:type, :name, :formals); end
 class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body); end
 class FunctionBody              < Struct.new(:declarations, :statments); end
 
-class Constant                  < Struct.new(:type, :value); end
-class Identifier                < Struct.new(:name); end
+class Constant                  < Struct.new(:type, :value)
+    def get_type env
+        type
+    end
+end
+class Identifier                < Struct.new(:name)
+    def get_type env
+        env.lookup name
+    end
+end
 
-class ArrayLookup               < Struct.new(:name, :expr); end
-class UnaryMinus                < Struct.new(:expr); end
+class ArrayLookup               < Struct.new(:name, :expr)
+    def get_type env
+        env.lookup name
+    end
+end
+class UnaryMinus                < Struct.new(:expr)
+    if expr.get_type == :INT
+        return :INT
+    else
+        raise SemanticError.new ""
+    end
+end
 class Not                       < Struct.new(:expr); end
 
 class BinaryOperator            < Struct.new(:left, :right); end
