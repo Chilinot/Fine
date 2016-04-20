@@ -134,7 +134,7 @@ end
 # ---- [header] --------------------------------------------------------
 ---- header
 require_relative "../lexer/lexer.rb"
-require_relative "../parser/nodes.rb"
+require_relative "../nodes.rb"
 
 # ---- [inner] ---------------------------------------------------------
 ---- inner
