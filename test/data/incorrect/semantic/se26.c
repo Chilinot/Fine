@@ -6,6 +6,6 @@ void f(int b[]) {
 
 int main(void) {
   char a[10];
-  f(a);
+  f(a);         // Attempt to pass array of chars when array of ints was expected
 }
 

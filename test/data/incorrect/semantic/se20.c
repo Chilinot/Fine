@@ -4,6 +4,6 @@
 int main(void) {
   int a[10];
   int b[10];
-  a=b;
+  a=b;          // assign array of int to array of int
 }
 

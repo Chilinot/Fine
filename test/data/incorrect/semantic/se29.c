@@ -6,6 +6,6 @@ void a (int n) {
 }
 
 int main(void) {
-  a(2);
+  a(2);             // Missing return
 }
 
