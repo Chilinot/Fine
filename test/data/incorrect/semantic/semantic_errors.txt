@@ -1,0 +1,37 @@
+se01.c: Variable 'b' not defined
+se02.c: Function 'foo' not defined
+se03.c: Procedure 'output' not defined
+se04.c: Redeclaration of 'a'
+se05.c: Attempt to redefine variable 'a'
+se06.c: Redeclaration of 'a'
+se07.c: Attempt to return value from procedure
+se08.c: Void return from function
+se09.c: Return from function with erroneous type
+se10.c: Index an integer
+se11.c: 'a' is not an lval
+se12.c: 'a' is not a function
+se13.c: 'foo' does not return a value
+se14.c: 'f' refers only to the local variable
+se15.c: Too few arguments to function 'q'
+se16.c: Too many arguments to function 'd'
+se17.c: Attempt to use char array in arithmetic. (legal in C)
+se18.c: assign int to array of char
+se19.c: Array of char in expression
+se20.c: assign array of int to array of int
+se21.c: Return from function with erroneous type
+se22.c: Attempt to apply arithmetic to array reference. This is legal in C, but not in uC
+se23.c: not an array!
+se24.c: 'b' cannot be assigned
+se25.c: No assignment here!
+se26.c: Attempt to pass array of chars when array of ints was expected
+se27.c: Attempt to return value from procedure
+se28.c: Attempt to return value from procedure
+se29.c: Missing return statment
+se30.c: assign array of int to int
+se31.c: Attempt to redefine  'a' as extern
+se32.c: 'foo' does not return a value
+se33.c: Too few arguments to function 'q'
+se34.c: Too many arguments to function 'd'
+
+
+0vfcy:edit ":nnoremap <cr> <c-^>
