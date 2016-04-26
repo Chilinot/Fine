@@ -24,10 +24,12 @@ class ArrayLookup               < Struct.new(:name, :expr)
     end
 end
 class UnaryMinus                < Struct.new(:expr)
-    if expr.get_type == :INT
-        return :INT
-    else
-        raise SemanticError.new ""
+    def get_type env
+        if expr.get_type(env) == :INT
+            return :INT
+        else
+            raise SemanticError.new("")
+        end
     end
 end
 class Not                       < Struct.new(:expr); end
