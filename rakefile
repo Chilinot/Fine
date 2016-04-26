@@ -29,7 +29,13 @@ namespace "parser" do
     end
 end
 
-task :test => ["lexer:test", "parser:test"]
+namespace "semantic" do
+    task "test" do
+        sh "rspec --color test/environment_test.rb"
+    end
+end
+
+task :test => ["lexer:test", "parser:test", "semantic:test"]
 task :clean => ["lexer:clean", "parser:clean"]
 
 
