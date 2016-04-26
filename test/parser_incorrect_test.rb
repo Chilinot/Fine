@@ -29,6 +29,12 @@ describe "lexer" do
     it "parser/pe07.c" do
         expect { parse("parser/pe07.c").inspect }.to raise_error Parser::SyntaxError
     end
+    it "parser/pe08.c" do
+        expect { parse("parser/pe08.c").inspect }.to raise_error Parser::SyntaxError
+    end
+    it "parser/pe09.c" do
+        expect { parse("parser/pe09.c").inspect }.to raise_error Parser::SyntaxError
+    end
     it "parser/pe10.c" do
         expect { parse("parser/pe10.c").inspect }.to raise_error Parser::SyntaxError
     end
