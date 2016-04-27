@@ -39,7 +39,7 @@ end
 class FunctionBody              < Struct.new(:declarations, :statments)
     def check_semantics env
         declarations.each do |decl|
-            env[decl.name] = {:type => decl.type}
+            decl.check_semantics env
         end
         statments.each do |stmt|
             stmt.check_semantics env
