@@ -5,7 +5,8 @@ class Environment
         @stack = [Scope.new]
     end
     def [] name
-        lookup name
+        info = lookup name
+        info[:type]
     end
     def []= name, value
         add name, value
@@ -27,11 +28,13 @@ class Environment
         @stack.push Scope.new return_type
     end
     def pop_scope
-        @stack.pop # TODO: check returns?
+        @stack.pop
     end
 
-    def valid_return? type
-        @stack.last.return_type == type
+    def current_return_type
+        @stack.reverse_each do |scope|
+            return scope.return_type if scope.return_type
+        end
     end
 
     class Scope
