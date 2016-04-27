@@ -66,4 +66,7 @@ describe "semantic analysis" do
     it "semantic/se16.c" do
         expect(semantic_error_message("semantic/se16.c")).to eq "Semantic error: d expected 2 arguments, but got 3"
     end
+    it "semantic/se17.c" do
+        expect(semantic_error_message("semantic/se17.c")).to eq  "Semantic error: char_array + int is not defined"
+    end
 end
