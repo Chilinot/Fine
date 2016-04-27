@@ -63,4 +63,7 @@ describe "semantic analysis" do
     it "semantic/se15_wrong_argument_types.c" do
         expect(semantic_error_message("semantic/se15_wrong_argument_types.c")).to eq "Semantic error: q expected argument at position 2 to be of type int, but got type char"
     end
+    it "semantic/se16.c" do
+        expect(semantic_error_message("semantic/se16.c")).to eq "Semantic error: d expected 2 arguments, but got 3"
+    end
 end
