@@ -1,7 +1,7 @@
 require_relative "../lib/parser/parser.rb"
 require_relative "../lib/utils.rb"
 
-describe "lexer" do
+describe "parser" do
     def parse relative_path, show_tokens = false
         absolute_path = __dir__ + "/data/incorrect/#{relative_path}"
         content = read_file absolute_path
