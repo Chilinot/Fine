@@ -90,7 +90,7 @@ rule
     while : WHILE condition block                           { result = While.new(val[1], val[2]) }
 
     return : RETURN expr ";"                                { result = Return.new(val[1]) }
-           | RETURN ";"                                     { result = Return.new }
+           | RETURN ";"                                     { result = Return.new(:VOID) }
 
       if : IF condition block else                          { result = If.new(val[1], val[2], val[3]) }
     else : /* empty */
