@@ -132,7 +132,7 @@ describe "parse" do
         expect(Parser.new.parse("void foo(void) { foo(42, bar); }")).to eq make_foo_fn([], [FunctionCall.new("foo",[Constant.new(:INT, 42), Identifier.new("bar")])])
     end
     it "parses functions with empty return statment" do
-        expect(Parser.new.parse("void foo(void) { return; }")).to eq make_foo_fn([], [Return.new])
+        expect(Parser.new.parse("void foo(void) { return; }")).to eq make_foo_fn([], [Return.new(:VOID)])
     end
     it "parses functions with return statment with expr" do
         expect(Parser.new.parse("void foo(void) { return 42; }")).to eq make_foo_fn([], [Return.new(Constant.new(:INT, 42))])
@@ -144,19 +144,19 @@ describe "parse" do
         expect(Parser.new.parse("void foo(void) { if (foo) { bar; } }")).to eq make_foo_fn([], [If.new(Identifier.new("foo"), [Identifier.new("bar")])])
     end
     it "parses functions with if else statment" do
-        expect(Parser.new.parse("void foo(void) { if (foo) { bar; } else { return; } }")).to eq make_foo_fn([], [If.new(Identifier.new("foo"), [Identifier.new("bar")], [Return.new])])
+        expect(Parser.new.parse("void foo(void) { if (foo) { bar; } else { return; } }")).to eq make_foo_fn([], [If.new(Identifier.new("foo"), [Identifier.new("bar")], [Return.new(:VOID)])])
     end
     it "parses functions with if else if" do
         expect(Parser.new.parse("void foo(void) { if (foo) { bar; } else if (bar) { return; } }")).to eq make_foo_fn([],
-        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new])])])
+        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new(:VOID)])])])
     end
     it "parses functions with if else if else" do
         expect(Parser.new.parse("void foo(void) { if (foo) { bar; } else if (bar) { return; } else { ; } }")).to eq make_foo_fn([],
-        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new], [])])])
+        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new(:VOID)], [])])])
     end
     it "parses functions with if else if else" do
         expect(Parser.new.parse("void foo(void) { if (foo) { bar; } else if (bar) { return; } else if (bar) { return; } else if (bar) { return; } else { ; } }")).to eq make_foo_fn([],
-        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new], [If.new(Identifier.new("bar"), [Return.new], [If.new(Identifier.new("bar"), [Return.new], [])])])])])
+        [If.new(Identifier.new("foo"),[Identifier.new("bar")], [If.new(Identifier.new("bar"), [Return.new(:VOID)], [If.new(Identifier.new("bar"), [Return.new(:VOID)], [If.new(Identifier.new("bar"), [Return.new(:VOID)], [])])])])])
     end
 end
 
