@@ -117,6 +117,7 @@ rule
          | expr "!=" expr                                   { result = NotEqualNode.new(val[0], val[2]) }
          | expr "==" expr                                   { result = EqualNode.new(val[0], val[2]) }
          | expr "&&" expr                                   { result = AndNode.new(val[0], val[2]) }
+         | expr "||" expr                                   { result = OrNode.new(val[0], val[2]) }
          | expr "=" expr                                    { result = AssignNode.new(val[0], val[2]) }
          | "-" expr                                         { result = UnaryMinus.new(val[1]) }
          | "!" expr                                         { result = Not.new(val[1]) }
