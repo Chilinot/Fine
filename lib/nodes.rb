@@ -115,11 +115,12 @@ class AssignNode                < BinaryOperator
         if (left.instance_of? Identifier or left.instance_of? ArrayLookup) and right.get_type(env) == env[left.name]
             return true
         else
-            case left.get_type(env)
+            left_type = left.get_type env
+            case left_type
             when :INT_FUNCTION, :CHAR_FUNCTION
                 raise SemanticError.new "can not assign to function"
             when :INT_ARRAY, :CHAR_ARRAY
-                raise SemanticError.new "can not overwrite array"
+                raise SemanticError.new "reference to #{left_type.to_s.downcase.gsub("_","-")} can not be modified"
             else
                 raise SemanticError.new "invalid assignment"
             end
