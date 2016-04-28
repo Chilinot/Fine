@@ -2,6 +2,6 @@
 
 char a[10];
 int main (void) {
-  if (a==42) ;
+  if (a==42) { ; }
    // Array of char in expression
 }
