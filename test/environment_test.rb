@@ -7,15 +7,15 @@ describe "environment" do
             expect {env["foo"]}.to raise_error(SemanticError)
         end
         it "foo is defined if we define foo" do
-            env["foo"] = {:type => :INT}
+            env["foo"] = {:class => :INT}
             expect(env["foo"]).to eq :INT
         end
     end
     context "foo and bar is defined" do
         let(:env) do
             e = Environment.new
-            e.add "foo", {:type => :INT}
-            e.add "bar", {:type => :CHAR}
+            e.add "foo", {:class => :INT}
+            e.add "bar", {:class => :CHAR}
             e
         end
         it "foo and bar is defined" do
@@ -26,7 +26,7 @@ describe "environment" do
             expect {env["foobar"]}.to raise_error(SemanticError)
         end
         it "foo can not be redefined in same scope" do
-            expect { env["foo"] = {:type => :BOOL} }.to raise_error(SemanticError)
+            expect { env["foo"] = {:class => :BOOL} }.to raise_error(SemanticError)
         end
         context "push a new scope" do
             before(:each) { env.push_scope }
@@ -36,12 +36,12 @@ describe "environment" do
                 expect(env["bar"]).to eq :CHAR
             end
             it "foo can be added to the new scope" do
-                env["foo"] =  {:type => :BOOL}
+                env["foo"] =  {:class => :BOOL}
                 expect(env["foo"]).to eq :BOOL
             end
             it "foo can not be added if we pop the new scope" do
                 env.pop_scope
-                expect { env["foo"] = {:type => :BOOL}}.to raise_error(SemanticError)
+                expect { env["foo"] = {:class => :BOOL}}.to raise_error(SemanticError)
             end
         end
     end

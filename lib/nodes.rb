@@ -11,26 +11,26 @@ end
 
 class VarDeclaration            < Struct.new(:type, :name)
     def check_semantics env
-        env[name] = {:type => type}
+        env[name] = {:class => :VARIABLE, :type => type}
     end
 end
 class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
     def check_semantics env
-        env[name] =  {:type => make_array_type(type) }
+        env[name] =  {:class => :ARRAY, :type => type }
     end
 end
 class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
     def check_semantics env
-        env[name] =  {:type => make_function_type(type), :return_type => type}
+        env[name] =  {:class => :FUNCTION, :type => type}
     end
 end
 
 class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
     def check_semantics env
-        env[name] = {:type => make_function_type(type), :return_type => type, :formals => formals, :num_formals => formals.count}
+        env[name] = {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count}
         env.push_scope type
             formals.each do |formal|
-                env[formal.name] = {:type => formal.type}
+                formal.check_semantics env
             end
             body.check_semantics env
         env.pop_scope
@@ -57,10 +57,10 @@ class Constant                  < Struct.new(:type, :value)
 end
 class Identifier                < Struct.new(:name)
     def get_type env
-        env[name]
+        env[name][:type]
     end
     def check_semantics env
-        env[name] and true
+        env.defined? namn
     end
 end
 
@@ -127,6 +127,7 @@ class OrNode                    < BinaryOperator; def to_s; "||" end end
 
 class AssignNode                < BinaryOperator
     def check_semantics env
+        allowed_types = [:INT, :CHAR]
         if (left.instance_of? Identifier or left.instance_of? ArrayLookup) and right.get_type(env) == env[left.name]
             return true
         else
