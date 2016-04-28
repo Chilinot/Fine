@@ -75,4 +75,7 @@ describe "semantic analysis" do
     it "semantic/se19.c" do
         expect(semantic_error_message("semantic/se19.c")).to eq "Semantic error: char_array == int is not defined"
     end
+    it "semantic/se20.c" do
+        expect(semantic_error_message("semantic/se20.c")).to eq "Semantic error: reference to int-array can not be modified"
+    end
 end
