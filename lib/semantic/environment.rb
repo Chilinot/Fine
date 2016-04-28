@@ -4,14 +4,16 @@ class Environment
     def initialize
         @stack = [Scope.new]
     end
+    def defined? name
+        env.lookup name
+    end
     def [] name
-        info = lookup name
-        info[:type]
+        lookup name
     end
     def []= name, value
         add name, value
     end
-    def lookup name# => type
+    def lookup name
         @stack.reverse_each do |scope|
             return scope[name] if scope.defined? name
         end
