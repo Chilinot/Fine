@@ -52,7 +52,7 @@ class Constant                  < Struct.new(:type, :value)
         type
     end
     def check_semantics env
-
+        true
     end
 end
 class Identifier                < Struct.new(:name)
