@@ -97,10 +97,25 @@ class BinaryOperator            < Struct.new(:left, :right)
         get_type env
     end
 end
-class AddNode                   < BinaryOperator; def to_s; "+" end end
-class SubNode                   < BinaryOperator; def to_s; "-" end end
-class MulNode                   < BinaryOperator; def to_s; "*" end end
-class DivNode                   < BinaryOperator; def to_s; "/" end end
+class AritmeticOperator < BinaryOperator
+    def get_type env
+        left_type = left.get_type env
+        right_type = right.get_type env
+        allowed_types = [:INT, :CHAR]
+        if left_type == right_type and allowed_types.include?(right_type)
+            return right_type
+        else
+            raise SemanticError.new "#{left_type.to_s.downcase} #{self} #{right_type.to_s.downcase.gsub("_", "-")} is not defined"
+        end
+    end
+    def check_semantics env
+        get_type env
+    end
+end
+class AddNode                   < AritmeticOperator; def to_s; "+" end end
+class SubNode                   < AritmeticOperator; def to_s; "-" end end
+class MulNode                   < AritmeticOperator; def to_s; "*" end end
+class DivNode                   < AritmeticOperator; def to_s; "/" end end
 class LessThanNode              < BinaryOperator; def to_s; "<" end end
 class GreaterThanNode           < BinaryOperator; def to_s; ">" end end
 class LessEqualNode             < BinaryOperator; def to_s; "<=" end end
