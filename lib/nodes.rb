@@ -51,7 +51,7 @@ class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
         end
 
         # Check body
-        env.push_scope type
+        env.push_scope type, name
             formals.each do |formal|
                 formal.check_semantics env
             end
@@ -66,6 +66,7 @@ class FunctionBody              < Struct.new(:declarations, :statments)
             decl.check_semantics env
         end
         statments.each do |stmt|
+            env.found_return_in_current_scope if stmt.instance_of? Return
             stmt.check_semantics env
         end
     end
@@ -210,6 +211,7 @@ class Return                    < Struct.new(:expr)
         elsif expr.get_type(env) != return_type
             raise SemanticError.new "expression does not match return type"
         end
+        return true
     end
 end
 class While                     < Struct.new(:condition, :block); end
