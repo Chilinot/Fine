@@ -93,4 +93,7 @@ describe "semantic analysis" do
     it "semantic/se25.c" do
         expect(semantic_error_message("semantic/se25.c")).to eq "Semantic error: can not assign to expression"
     end
+    it "semantic/se26.c" do
+        expect(semantic_error_message("semantic/se26.c")).to eq "Semantic error: 'f' expected argument at position 1 to be of type int-array, but got type char-array"
+    end
 end
