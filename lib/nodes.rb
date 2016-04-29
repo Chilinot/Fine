@@ -28,7 +28,7 @@ end
 class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
     def check_semantics env
         if env.defined? name
-            raise SemanticError "'#{name}' already defined as #{env[name][:class].to_s.downcase}"
+            raise SemanticError "'#{name}' already defined as #{type_to_s env[name][:class]}"
         else
             env[name] =  {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count, :implemented => false}
         end
@@ -39,7 +39,7 @@ class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
     def check_semantics env
         if env.defined? name
             if env[name][:class] != :FUNCTION
-                    raise SemanticError.new "'#{name}' already defined as #{env[name][:class].to_s.downcase}"
+                    raise SemanticError.new "'#{name}' already defined as #{type_to_s env[name][:class]}"
             elsif env[name][:implemented]
                     raise SemanticError.new "function '#{name}' already implemented"
             else
@@ -132,8 +132,8 @@ class AritmeticOperator < BinaryOperator
         if left_type == right_type and allowed_types.include?(right_type)
             return right_type
         else
-            raise SemanticError.new "invalid operands to '#{self}'"
-            # "#{left_type.to_s.downcase} #{self} #{right_type.to_s.downcase.gsub("_", "-")} is not defined"
+            # raise SemanticError.new "invalid operands to '#{self}'"
+            raise SemanticError.new "#{type_to_s left_type} #{self} #{type_to_s right_type} is not defined"
         end
     end
     def check_semantics env
@@ -161,13 +161,13 @@ class AssignNode                < BinaryOperator
                 return true
             else
                 # error : type mismatch
-                raise SemanticError.new "can not assign #{right.get_type(env).to_s.downcase} to variable of type #{left.get_type(env).to_s.downcase}"
+                raise SemanticError.new "can not assign #{type_to_s right.get_type(env)} to variable of type #{type_to_s left.get_type(env)}"
             end
         end
 
         # error : can not be assigned
         if left.instance_of? Identifier
-            raise SemanticError.new "can not assign to #{env[left.name][:class].to_s.downcase} reference '#{left.name}'"
+            raise SemanticError.new "can not assign to #{type_to_s env[left.name][:class]} reference '#{left.name}'"
         else
             raise SemanticError.new "can not assign to expression"
         end
@@ -192,7 +192,7 @@ class FunctionCall              < Struct.new(:name, :args)
         formals = info[:formals]
         num_args.times do |i|
             if formals[i].get_type(env) != args[i].get_type(env)
-                raise SemanticError.new "'#{name}' expected argument at position #{i+1} to be of type #{formals[i].get_type(env).to_s.downcase.gsub("_","-")}, but got type #{args[i].get_type(env).to_s.downcase.gsub("_","-")}"
+                raise SemanticError.new "'#{name}' expected argument at position #{i+1} to be of type #{type_to_s formals[i].get_type(env)}, but got type #{type_to_s args[i].get_type(env)}"
             end
         end
 
