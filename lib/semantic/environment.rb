@@ -5,7 +5,10 @@ class Environment
         @stack = [Scope.new]
     end
     def defined? name
-        env.lookup name
+        @stack.reverse_each do |scope|
+            return true if scope.defined? name
+        end
+        return false
     end
     def [] name
         lookup name
@@ -17,14 +20,13 @@ class Environment
         @stack.reverse_each do |scope|
             return scope[name] if scope.defined? name
         end
-        raise SemanticError.new "#{name} was not defined"
+        raise SemanticError.new "'#{name}' was not defined"
     end
     def add name, type
         unless @stack.last.defined? name
             @stack.last[name] = type
         else
-            #raise SemanticError.new "#{name} already defined"
-            raise SemanticError "#{name} already defined as #{env[name][:class].to_s.downcase}"
+            raise SemanticError.new "'#{name}' already defined as #{lookup(name)[:class].to_s.downcase}"
         end
     end
     def push_scope return_type=nil

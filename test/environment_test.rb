@@ -26,7 +26,7 @@ describe "environment" do
             expect {env["foobar"]}.to raise_error(SemanticError)
         end
         it "foo can not be redefined in same scope" do
-            expect { env["foo"] = {:class => :BOOL} }.to raise_error(SemanticError)
+            expect { env["foo"] = {:class => :VARIABLE, :type => :INT} }.to raise_error(SemanticError)
         end
         context "push a new scope" do
             before(:each) { env.push_scope }
