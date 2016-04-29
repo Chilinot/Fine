@@ -102,4 +102,7 @@ describe "semantic analysis" do
     it "semantic/se28.c" do
         expect(semantic_error_message("semantic/se28.c")).to eq "Semantic error: attempt to return value from procedure"
     end
+    it "semantic/se29.c" do
+        expect(semantic_error_message("semantic/se29.c")).to eq "Semantic error: missing return in 'main'"
+    end
 end
