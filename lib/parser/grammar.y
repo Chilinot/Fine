@@ -8,7 +8,7 @@ left "*" "/" # 13L
 left "+" "-" # 12L
 left "<" ">" "<=" ">=" # 10L
 left "==" "!=" #9L
-left "&&" # 5L
+left "&&" "||" # 5L
 right "=" # 2R
 preclow
 
