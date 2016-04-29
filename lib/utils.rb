@@ -12,3 +12,6 @@ def ast_to_string str
     str.gsub(/#<struct /, "\n<").gsub(",", "").gsub("[", "[").gsub("]", "]\n")
 end
 
+def type_to_s type
+    type.to_s.downcase.gsub("_","-")
+end
