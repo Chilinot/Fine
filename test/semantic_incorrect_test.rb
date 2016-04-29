@@ -114,4 +114,7 @@ describe "semantic analysis" do
     it "semantic/se32.c" do
         expect(semantic_error_message("semantic/se32.c")).to eq "Semantic error: function foo does not return a value"
     end
+    it "semantic/se33.c" do
+        expect(semantic_error_message("semantic/se33.c")).to eq "Semantic error: 'q' expected 3 arguments, but got 2"
+    end
 end
