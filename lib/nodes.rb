@@ -22,7 +22,7 @@ end
 class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
     def check_semantics env
         if env.defined? name
-            raise SemanticError "#{name} already defined as #{env[name][:class].to_s.downcase}"
+            raise SemanticError "'#{name}' already defined as #{env[name][:class].to_s.downcase}"
         else
             env[name] =  {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count, :implemented => false}
         end
@@ -31,11 +31,13 @@ end
 
 class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
     def check_semantics env
-
         if env.defined? name
-            if env[name][:implemented]
-                raise SemanticError.new "Function #{name} already implemented."
+            if env[name][:class] != :FUNCTION
+                    raise SemanticError.new "'#{name}' already defined as #{env[name][:class].to_s.downcase}"
+            elsif env[name][:implemented]
+                    raise SemanticError.new "function '#{name}' already implemented"
             else
+                # TODO: check if formals match!!
                 env[name][:implemented] = true
             end
         else
@@ -76,7 +78,7 @@ class Identifier                < Struct.new(:name)
         env[name][:type]
     end
     def check_semantics env
-        env.defined? namn
+        env.defined? name
     end
 end
 
@@ -85,7 +87,7 @@ class ArrayLookup               < Struct.new(:name, :expr)
         env[name][:type]
     end
     def check_semantics env
-        raise SemanticError.new "#{name} is not an array" unless env[name][:class] == :ARRAY
+        raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
     end
 end
@@ -100,7 +102,8 @@ class BinaryOperator            < Struct.new(:left, :right)
         if left_type == right_type
             return right_type
         else
-            raise SemanticError.new "#{left_type.to_s.downcase} #{self} #{right_type.to_s.downcase.gsub("_", "-")} is not defined"
+            # raise SemanticError.new "#{left_type.to_s.downcase} #{self} #{right_type.to_s.downcase.gsub("_", "-")} is not defined"
+            raise SemanticError.new "invalid operands to '#{self}'"
         end
     end
     def check_semantics env
@@ -117,7 +120,8 @@ class AritmeticOperator < BinaryOperator
         if left_type == right_type and allowed_types.include?(right_type)
             return right_type
         else
-            raise SemanticError.new "#{left_type.to_s.downcase} #{self} #{right_type.to_s.downcase.gsub("_", "-")} is not defined"
+            raise SemanticError.new "invalid operands to '#{self}'"
+            # "#{left_type.to_s.downcase} #{self} #{right_type.to_s.downcase.gsub("_", "-")} is not defined"
         end
     end
     def check_semantics env
@@ -139,41 +143,38 @@ class OrNode                    < BinaryOperator; def to_s; "||" end end
 
 class AssignNode                < BinaryOperator
     def check_semantics env
-        allowed_types = [:INT, :CHAR]
-        if (left.instance_of? Identifier or left.instance_of? ArrayLookup) and right.get_type(env) == env[left.name]
-            return true
-        else
-            left_type = left.get_type env
-            case left_type
-            when :INT_FUNCTION, :CHAR_FUNCTION
-                raise SemanticError.new "can not assign to function"
-            when :INT_ARRAY, :CHAR_ARRAY
-                raise SemanticError.new "reference to #{left_type.to_s.downcase.gsub("_","-")} can not be modified"
+        if (left.instance_of?(Identifier) and env[left.name][:class] == :VARIABLE) or left.instance_of? ArrayLookup
+            if left.get_type(env) == right.get_type(env)
+                # ok
+                return true
             else
-                raise SemanticError.new "invalid assignment"
+                # error : type mismatch
+                raise SemanticError.new "expression of type #{right.get_type(env).to_s.downcase} can not be assigned to #{left.get_type(env).to_s.downcase}"
             end
         end
+        # error : can not be assigned
+        raise SemanticError.new "can not assign to #{env[left.name][:class].to_s.downcase} reference '#{left.name}'"
     end
 end
 class FunctionCall              < Struct.new(:name, :args)
     def get_type env
         info = env.lookup name
         check_semantics env
-        info[:return_type]
+        info[:type]
     end
     def check_semantics env
-        raise SemanticError.new "#{name} is not a function or procedure" unless [:CHAR_FUNCTION, :INT_FUNCTION, :VOID_FUNCTION].include? env[name]
+        raise SemanticError.new "'#{name}' is not a function or procedure" unless env[name][:class] == :FUNCTION
 
         info = env.lookup name
         num_formals = info[:num_formals]
         num_args = args.count
 
-        raise SemanticError.new "#{name} expected #{num_formals} arguments, but got #{args.count}" if num_args != num_formals
+        raise SemanticError.new "'#{name}' expected #{num_formals} arguments, but got #{args.count}" if num_args != num_formals
 
         formals = info[:formals]
         num_args.times do |i|
             if formals[i].type != args[i].get_type(env)
-                raise SemanticError.new "#{name} expected argument at position #{i+1} to be of type #{formals[i].type.to_s.downcase}, but got type #{args[i].get_type(env).to_s.downcase}"
+                raise SemanticError.new "'#{name}' expected argument at position #{i+1} to be of type #{formals[i].type.to_s.downcase}, but got type #{args[i].get_type(env).to_s.downcase}"
             end
         end
 
