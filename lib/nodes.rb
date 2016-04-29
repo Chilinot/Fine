@@ -21,13 +21,28 @@ class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
 end
 class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
     def check_semantics env
-        env[name] =  {:class => :FUNCTION, :type => type}
+        if env.defined? name
+            raise SemanticError "#{name} already defined as #{env[name][:class].to_s.downcase}"
+        else
+            env[name] =  {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count, :implemented => false}
+        end
     end
 end
 
 class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
     def check_semantics env
-        env[name] = {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count}
+
+        if env.defined? name
+            if env[name][:implemented]
+                raise SemanticError.new "Function #{name} already implemented."
+            else
+                env[name][:implemented] = true
+            end
+        else
+            env[name] = {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count, :implemented => true}
+        end
+
+        # Check body
         env.push_scope type
             formals.each do |formal|
                 formal.check_semantics env
@@ -36,6 +51,7 @@ class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
         env.pop_scope
     end
 end
+
 class FunctionBody              < Struct.new(:declarations, :statments)
     def check_semantics env
         declarations.each do |decl|
@@ -52,7 +68,7 @@ class Constant                  < Struct.new(:type, :value)
         type
     end
     def check_semantics env
-
+        true
     end
 end
 class Identifier                < Struct.new(:name)
