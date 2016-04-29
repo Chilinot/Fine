@@ -2,7 +2,7 @@ require_relative "error.rb"
 
 class Environment
     def initialize
-        @stack = [Scope.new]
+        @stack = [Scope.new(:VOID,"global")]
     end
     def defined? name
         @stack.reverse_each do |scope|
@@ -29,11 +29,16 @@ class Environment
             raise SemanticError.new "'#{name}' already defined as #{lookup(name)[:class].to_s.downcase}"
         end
     end
-    def push_scope return_type=nil
-        @stack.push Scope.new return_type
+    def push_scope return_type, name
+        @stack.push Scope.new return_type, name
     end
     def pop_scope
-        @stack.pop
+        scope = @stack.pop
+        raise SemanticError.new "missing return in '#{scope.name}'" if scope.need_return
+    end
+
+    def found_return_in_current_scope
+        @stack.last.need_return = false
     end
 
     def current_return_type
@@ -43,9 +48,12 @@ class Environment
     end
 
     class Scope
-        attr_reader :return_type
-        def initialize return_type = nil
+        attr_reader :return_type, :name
+        attr_accessor :need_return
+        def initialize return_type, name
+            @name = name
             @return_type = return_type
+            @need_return = return_type != :VOID
             @definitions = {}
         end
         def [] name
