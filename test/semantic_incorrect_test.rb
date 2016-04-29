@@ -111,4 +111,7 @@ describe "semantic analysis" do
     it "semantic/se31.c" do
         expect(semantic_error_message("semantic/se31.c")).to eq "Semantic error: 'a' already defined as variable"
     end
+    it "semantic/se32.c" do
+        expect(semantic_error_message("semantic/se32.c")).to eq "Semantic error: function foo does not return a value"
+    end
 end
