@@ -84,4 +84,7 @@ describe "semantic analysis" do
     it "semantic/se22.c" do
         expect(semantic_error_message("semantic/se22.c")).to eq "Semantic error: invalid operands to '+'"
     end
+    it "semantic/se23.c" do
+        expect(semantic_error_message("semantic/se23.c")).to eq "Semantic error: 'b' is not an array"
+    end
 end
