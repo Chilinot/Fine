@@ -117,4 +117,7 @@ describe "semantic analysis" do
     it "semantic/se33.c" do
         expect(semantic_error_message("semantic/se33.c")).to eq "Semantic error: 'q' expected 3 arguments, but got 2"
     end
+    it "semantic/se34.c" do
+        expect(semantic_error_message("semantic/se34.c")).to eq "Semantic error: 'd' expected 2 arguments, but got 3"
+    end
 end
