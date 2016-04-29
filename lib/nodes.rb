@@ -161,7 +161,7 @@ class AssignNode                < BinaryOperator
                 return true
             else
                 # error : type mismatch
-                raise SemanticError.new "expression of type #{right.get_type(env).to_s.downcase} can not be assigned to #{left.get_type(env).to_s.downcase}"
+                raise SemanticError.new "can not assign #{right.get_type(env).to_s.downcase} to variable of type #{left.get_type(env).to_s.downcase}"
             end
         end
 
