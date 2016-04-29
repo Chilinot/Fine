@@ -153,8 +153,14 @@ class AssignNode                < BinaryOperator
                 raise SemanticError.new "expression of type #{right.get_type(env).to_s.downcase} can not be assigned to #{left.get_type(env).to_s.downcase}"
             end
         end
+
         # error : can not be assigned
-        raise SemanticError.new "can not assign to #{env[left.name][:class].to_s.downcase} reference '#{left.name}'"
+        if left.instance_of? Identifier
+            raise SemanticError.new "can not assign to #{env[left.name][:class].to_s.downcase} reference '#{left.name}'"
+        else
+            raise SemanticError.new "can not assign to expression"
+        end
+
     end
 end
 class FunctionCall              < Struct.new(:name, :args)
