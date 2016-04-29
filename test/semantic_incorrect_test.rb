@@ -105,4 +105,7 @@ describe "semantic analysis" do
     it "semantic/se29.c" do
         expect(semantic_error_message("semantic/se29.c")).to eq "Semantic error: missing return in 'main'"
     end
+    it "semantic/se30.c" do
+        expect(semantic_error_message("semantic/se30.c")).to eq "Semantic error: can not assign int_array to variable of type int"
+    end
 end
