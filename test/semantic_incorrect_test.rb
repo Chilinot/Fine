@@ -108,4 +108,7 @@ describe "semantic analysis" do
     it "semantic/se30.c" do
         expect(semantic_error_message("semantic/se30.c")).to eq "Semantic error: can not assign int-array to variable of type int"
     end
+    it "semantic/se31.c" do
+        expect(semantic_error_message("semantic/se31.c")).to eq "Semantic error: 'a' already defined as variable"
+    end
 end
