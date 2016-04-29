@@ -29,9 +29,9 @@ describe "environment" do
             expect { env["foo"] = {:class => :VARIABLE, :type => :INT} }.to raise_error(SemanticError)
         end
         context "push a new scope" do
-            before(:each) { env.push_scope }
+            before(:each) { env.push_scope(:VOID, "awesome") }
             it "foo and bar is still defined after we push a new scope" do
-                env.push_scope
+                env.push_scope :VOID, "awesome"
                 expect(env["foo"][:type]).to eq :INT
                 expect(env["bar"][:type]).to eq :CHAR
             end
