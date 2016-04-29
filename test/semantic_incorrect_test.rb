@@ -96,4 +96,7 @@ describe "semantic analysis" do
     it "semantic/se26.c" do
         expect(semantic_error_message("semantic/se26.c")).to eq "Semantic error: 'f' expected argument at position 1 to be of type int-array, but got type char-array"
     end
+    it "semantic/se27.c" do
+        expect(semantic_error_message("semantic/se27.c")).to eq "Semantic error: attempt to return value from procedure"
+    end
 end
