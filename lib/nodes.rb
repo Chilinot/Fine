@@ -82,20 +82,14 @@ end
 
 class ArrayLookup               < Struct.new(:name, :expr)
     def get_type env
-        env[name]
+        env[name][:type]
     end
     def check_semantics env
-        [:INT_ARRAY, :CHAR_ARRAY].include? env[name] or raise SemanticError.new "#{name} is not an array"
+        raise SemanticError.new "#{name} is not an array" unless env[name][:class] == :ARRAY
+        return true
     end
 end
 class UnaryMinus                < Struct.new(:expr)
-    def get_type env
-        if expr.get_type(env) == :INT
-            return :INT
-        else
-            raise SemanticError.new("")
-        end
-    end
 end
 class Not                       < Struct.new(:expr); end
 
@@ -113,6 +107,8 @@ class BinaryOperator            < Struct.new(:left, :right)
         get_type env
     end
 end
+
+
 class AritmeticOperator < BinaryOperator
     def get_type env
         left_type = left.get_type env
