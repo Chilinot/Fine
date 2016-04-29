@@ -84,6 +84,7 @@ end
 
 class ArrayLookup               < Struct.new(:name, :expr)
     def get_type env
+        check_semantics env
         env[name][:type]
     end
     def check_semantics env
