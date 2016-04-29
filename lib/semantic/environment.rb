@@ -23,7 +23,8 @@ class Environment
         unless @stack.last.defined? name
             @stack.last[name] = type
         else
-            raise SemanticError.new "#{name} already defined"
+            #raise SemanticError.new "#{name} already defined"
+            raise SemanticError "#{name} already defined as #{env[name][:class].to_s.downcase}"
         end
     end
     def push_scope return_type=nil
