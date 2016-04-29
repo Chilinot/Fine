@@ -81,4 +81,7 @@ describe "semantic analysis" do
     it "semantic/se21.c" do
         expect(semantic_error_message("semantic/se21.c")).to eq "Semantic error: expression does not match return type"
     end
+    it "semantic/se22.c" do
+        expect(semantic_error_message("semantic/se22.c")).to eq "Semantic error: invalid operands to '+'"
+    end
 end
