@@ -10,11 +10,17 @@ class Program                   < Struct.new(:nodes)
 end
 
 class VarDeclaration            < Struct.new(:type, :name)
+    def get_type env
+        type
+    end
     def check_semantics env
         env[name] = {:class => :VARIABLE, :type => type}
     end
 end
 class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
+    def get_type env
+        "#{type}_ARRAY".to_sym
+    end
     def check_semantics env
         env[name] =  {:class => :ARRAY, :type => type }
     end
@@ -75,7 +81,11 @@ class Constant                  < Struct.new(:type, :value)
 end
 class Identifier                < Struct.new(:name)
     def get_type env
-        env[name][:type]
+        if [:ARRAY, :FUNCTION].include? env[name][:class]
+            "#{env[name][:type]}_#{env[name][:class]}".to_sym
+        else
+            env[name][:type]
+        end
     end
     def check_semantics env
         env.defined? name
@@ -180,8 +190,8 @@ class FunctionCall              < Struct.new(:name, :args)
 
         formals = info[:formals]
         num_args.times do |i|
-            if formals[i].type != args[i].get_type(env)
-                raise SemanticError.new "'#{name}' expected argument at position #{i+1} to be of type #{formals[i].type.to_s.downcase}, but got type #{args[i].get_type(env).to_s.downcase}"
+            if formals[i].get_type(env) != args[i].get_type(env)
+                raise SemanticError.new "'#{name}' expected argument at position #{i+1} to be of type #{formals[i].get_type(env).to_s.downcase.gsub("_","-")}, but got type #{args[i].get_type(env).to_s.downcase.gsub("_","-")}"
             end
         end
 
