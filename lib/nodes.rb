@@ -28,7 +28,7 @@ end
 class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
     def check_semantics env
         if env.defined? name
-            raise SemanticError "'#{name}' already defined as #{type_to_s env[name][:class]}"
+            raise SemanticError.new "'#{name}' already defined as #{type_to_s env[name][:class]}"
         else
             env[name] =  {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count, :implemented => false}
         end
