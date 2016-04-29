@@ -52,7 +52,7 @@ describe "semantic analysis" do
         expect(semantic_error_message("semantic/se12.c")).to eq "Semantic error: 'a' is not a function or procedure"
     end
     it "semantic/se13.c" do
-        expect(semantic_error_message("semantic/se13.c")).to eq "Semantic error: invalid operands to '+'"
+        expect(semantic_error_message("semantic/se13.c")).to eq "Semantic error: function foo does not return a value"
     end
     it "semantic/se14.c" do
         expect(semantic_error_message("semantic/se14.c")).to eq  "Semantic error: 'f' is not a function or procedure"
@@ -67,13 +67,13 @@ describe "semantic analysis" do
         expect(semantic_error_message("semantic/se16.c")).to eq "Semantic error: 'd' expected 2 arguments, but got 3"
     end
     it "semantic/se17.c" do
-        expect(semantic_error_message("semantic/se17.c")).to eq  "Semantic error: invalid operands to '+'"
+        expect(semantic_error_message("semantic/se17.c")).to eq "Semantic error: char-array + int is not defined"
     end
     it "semantic/se18.c" do
             expect(semantic_error_message("semantic/se18.c")).to eq "Semantic error: can not assign to array reference 'a'"
     end
     it "semantic/se19.c" do
-        expect(semantic_error_message("semantic/se19.c")).to eq "Semantic error: invalid operands to '=='"
+        expect(semantic_error_message("semantic/se19.c")).to eq "Semantic error: char-array == int is not defined"
     end
     it "semantic/se20.c" do
         expect(semantic_error_message("semantic/se20.c")).to eq "Semantic error: can not assign to array reference 'a'"
@@ -82,7 +82,7 @@ describe "semantic analysis" do
         expect(semantic_error_message("semantic/se21.c")).to eq "Semantic error: expression does not match return type"
     end
     it "semantic/se22.c" do
-        expect(semantic_error_message("semantic/se22.c")).to eq "Semantic error: invalid operands to '+'"
+        expect(semantic_error_message("semantic/se22.c")).to eq "Semantic error: char-array + int is not defined"
     end
     it "semantic/se23.c" do
         expect(semantic_error_message("semantic/se23.c")).to eq "Semantic error: 'b' is not an array"

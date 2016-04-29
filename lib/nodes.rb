@@ -114,8 +114,7 @@ class BinaryOperator            < Struct.new(:left, :right)
         if left_type == right_type
             return right_type
         else
-            # raise SemanticError.new "#{left_type.to_s.downcase} #{self} #{right_type.to_s.downcase.gsub("_", "-")} is not defined"
-            raise SemanticError.new "invalid operands to '#{self}'"
+            raise SemanticError.new "#{type_to_s left_type} #{self} #{type_to_s right_type} is not defined"
         end
     end
     def check_semantics env
@@ -132,7 +131,6 @@ class AritmeticOperator < BinaryOperator
         if left_type == right_type and allowed_types.include?(right_type)
             return right_type
         else
-            # raise SemanticError.new "invalid operands to '#{self}'"
             raise SemanticError.new "#{type_to_s left_type} #{self} #{type_to_s right_type} is not defined"
         end
     end
@@ -178,6 +176,7 @@ class FunctionCall              < Struct.new(:name, :args)
     def get_type env
         info = env.lookup name
         check_semantics env
+        raise SemanticError.new "function #{name} does not return a value" if info[:type] == :VOID
         info[:type]
     end
     def check_semantics env
