@@ -90,4 +90,7 @@ describe "semantic analysis" do
     it "semantic/se24.c" do
         expect(semantic_error_message("semantic/se24.c")).to eq "Semantic error: can not assign to array reference 'b'"
     end
+    it "semantic/se25.c" do
+        expect(semantic_error_message("semantic/se25.c")).to eq "Semantic error: can not assign to expression"
+    end
 end
