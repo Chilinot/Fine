@@ -226,7 +226,12 @@ class Return                    < Struct.new(:expr)
         return true
     end
 end
-class While                     < Struct.new(:condition, :block); end
+class While                     < Struct.new(:condition, :body)
+    def check_semantics env
+        condition.check_semantics env
+        body.each { |stmt| stmt.check_semantics env }
+    end
+end
 class If                        < Struct.new(:condition, :then_block, :else_block)
     def check_semantics env
         condition.check_semantics env
