@@ -1,43 +1,19 @@
-task :default => "test"
+task :default => :test
 
-
-namespace "lexer" do
-    file "lib/lexer/lexer.rb" => "lib/lexer/lexer.rex" do
-        sh "rex --output-file lib/lexer/lexer.rb lib/lexer/lexer.rex"
-    end
-    task "test" => "lib/lexer/lexer.rb" do
-        sh "rspec --color test/lexer_test.rb"
-        sh "rspec --color test/lexer_quiet_test.rb"
-        sh "rspec --color test/lexer_incorrect_test.rb"
-    end
-    task "clean" do
-        rm_f "lib/lexer/lexer.rb"
-    end
+file "lib/lexer/lexer.rb" => "lib/lexer/lexer.rex" do
+    sh "rex --output-file lib/lexer/lexer.rb lib/lexer/lexer.rex"
 end
 
-namespace "parser" do
-    file "lib/parser/parser.rb" => ["lib/lexer/lexer.rb", "lib/parser/grammar.y"] do
-        sh "racc --verbose --output-file=lib/parser/parser.rb lib/parser/grammar.y"
-    end
-    task "test" => "lib/parser/parser.rb" do
-        sh "rspec --color test/parser_test.rb"
-        sh "rspec --color test/parser_quiet_test.rb"
-        sh "rspec --color test/parser_incorrect_test.rb"
-    end
-    task "clean" do
-        rm_f "lib/parser/parser.rb"
-    end
+file "lib/parser/parser.rb" => ["lib/lexer/lexer.rb", "lib/parser/grammar.y"] do
+    sh "racc --verbose --output-file=lib/parser/parser.rb lib/parser/grammar.y"
 end
 
-namespace "semantic" do
-    task "test" => "lib/parser/parser.rb" do
-        sh "rspec --color test/environment_test.rb"
-        sh "rspec --color test/semantic_incorrect_test.rb"
-        sh "rspec --color test/semantic_quiet_test.rb"
-    end
+task :test => ["lib/lexer/lexer.rb", "lib/parser/parser.rb"] do
+    sh "rspec spec"
 end
 
-task :test => ["lexer:test", "parser:test", "semantic:test"]
-task :clean => ["lexer:clean", "parser:clean"]
-
+task :clean do
+    rm_f "lib/lexer/lexer.rb"
+    rm_f "lib/parser/parser.rb"
+end
 
