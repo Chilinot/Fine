@@ -59,7 +59,7 @@ inner
         end
     end
     def make_token value
-        Token.new(@lineno, value)
+        Token.new(@current_line, value)
     end
     def tokenize code, show_tokens=false
         @current_line = 1
