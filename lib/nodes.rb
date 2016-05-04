@@ -15,6 +15,7 @@ class VarDeclaration            < Struct.new(:type, :name)
     end
     def check_semantics env
         env[name] = {:class => :VARIABLE, :type => type}
+        return true
     end
 end
 class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
@@ -23,6 +24,7 @@ class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
     end
     def check_semantics env
         env[name] =  {:class => :ARRAY, :type => type }
+        return true
     end
 end
 class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
@@ -32,6 +34,7 @@ class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
         else
             env[name] =  {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count, :implemented => false}
         end
+        return true
     end
 end
 
@@ -57,6 +60,7 @@ class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
             end
             body.check_semantics env
         env.pop_scope
+        return true
     end
 end
 
@@ -69,6 +73,7 @@ class FunctionBody              < Struct.new(:declarations, :statments)
             env.found_return_in_current_scope if stmt.instance_of? Return
             stmt.check_semantics env
         end
+        return true
     end
 end
 
@@ -77,7 +82,7 @@ class Constant                  < Struct.new(:type, :value)
         type
     end
     def check_semantics env
-        true
+        return true
     end
 end
 class Identifier                < Struct.new(:name)
@@ -137,6 +142,7 @@ class BinaryOperator            < Struct.new(:left, :right)
     end
     def check_semantics env
         get_type env
+        return true
     end
 end
 class AritmeticOperator < BinaryOperator; end
@@ -173,7 +179,7 @@ class AssignNode                < BinaryOperator
         else
             raise SemanticError.new "can not assign to expression"
         end
-
+        return false
     end
 end
 
@@ -222,6 +228,7 @@ class While                     < Struct.new(:condition, :body)
     def check_semantics env
         condition.check_semantics env
         body.each { |stmt| stmt.check_semantics env }
+        return true
     end
 end
 class If                        < Struct.new(:condition, :then_block, :else_block)
@@ -229,5 +236,6 @@ class If                        < Struct.new(:condition, :then_block, :else_bloc
         condition.check_semantics env
         then_block.each { |stmt| stmt.check_semantics env }
         else_block.each { |stmt| stmt.check_semantics env } if else_block
+        return true
     end
 end
