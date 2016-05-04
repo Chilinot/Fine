@@ -70,6 +70,14 @@ describe "lexer" do
                                                       [",", ","],
                                                       [";", ";"]]
     end
+    it "ignores multi-line comments" do
+        expect(Lexer.new.tokenize("int foo; /* this is a multi-line comment with newlines \n and tabs \t */ c + +")).to eq [[:INT, "int"],
+                                                                                                                            [:IDENTIFIER, "foo"],
+                                                                                                                            [";", ";"],
+                                                                                                                            [:IDENTIFIER, "c"],
+                                                                                                                            ["+", "+"],
+                                                                                                                            ["+", "+"]]
+    end
     it "handles invalid tokens" do
         expect {Lexer.new.tokenize("int a;\n/*\n  this is a comment\n\n*/int 42foo;") }.to raise_error(Lexer::LexicalError)
     end

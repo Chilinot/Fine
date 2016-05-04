@@ -33,6 +33,7 @@ namespace "semantic" do
     task "test" => "lib/parser/parser.rb" do
         sh "rspec --color test/environment_test.rb"
         sh "rspec --color test/semantic_incorrect_test.rb"
+        sh "rspec --color test/semantic_quiet_test.rb"
     end
 end
 
