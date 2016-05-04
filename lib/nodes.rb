@@ -104,8 +104,21 @@ class ArrayLookup               < Struct.new(:name, :expr)
     end
 end
 class UnaryMinus                < Struct.new(:expr)
+    def get_type env
+        expr.get_type env
+    end
+    def check_semantics env
+        expr.check_semantics env
+    end
 end
-class Not                       < Struct.new(:expr); end
+class Not                       < Struct.new(:expr)
+    def get_type env
+        expr.get_type env
+    end
+    def check_semantics env
+        expr.check_semantics env
+    end
+end
 
 class BinaryOperator            < Struct.new(:left, :right)
     def get_type env
