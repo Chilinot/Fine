@@ -105,7 +105,13 @@ rule
     expr : INT_LITERAL                                      { result = Constant.new(:INT, val[0].value) }
          | CHAR_LITERAL                                     { result = Constant.new(:CHAR, val[0].value) }
          | IDENTIFIER                                       { result = Identifier.new(val[0].value) }
-         | IDENTIFIER "[" expr "]"                          { result = ArrayLookup.new(val[0].value, val[2])  }
+         | IDENTIFIER "[" expr "]"                          { result = ArrayLookup.new(val[0].value, val[2]) }
+         | "(" typename ")" expr                            { if val[1] != :VOID
+                                                                  result = TypeCast.new(val[1], val[3])
+                                                              else
+                                                                  raise SyntaxError.new(val[0].line, "can not cast expression to void")
+                                                              end }
+
          | expr "+" expr                                    { result = AddNode.new(val[0], val[2]) }
          | expr "-" expr                                    { result = SubNode.new(val[0], val[2]) }
          | expr "*" expr                                    { result = MulNode.new(val[0], val[2]) }

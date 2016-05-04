@@ -127,17 +127,11 @@ end
 
 class BinaryOperator            < Struct.new(:left, :right)
     def get_type env
-        left_type = left.get_type env
-        right_type = right.get_type env
-        allowed_types = [:INT, :CHAR]
-        if allowed_types.include?(right_type) and allowed_types.include?(left_type)
-            if left_type == right_type
-                return right_type
-            else
-                return :INT
-            end
+        right_type = right.get_type(env)
+        if left.get_type(env) == right_type
+            return right_type
         else
-            raise SemanticError.new "#{type_to_s left_type} #{self} #{type_to_s right_type} is not defined"
+            raise SemanticError.new "#{type_to_s left.get_type(env)} #{self} #{type_to_s right.get_type(env)} is not defined"
         end
     end
     def check_semantics env
@@ -159,13 +153,23 @@ class NotEqualNode              < BinaryOperator; def to_s; "!=" end end
 class EqualNode                 < BinaryOperator; def to_s; "==" end end
 class AndNode                   < BinaryOperator; def to_s; "&&" end end
 class OrNode                    < BinaryOperator; def to_s; "||" end end
+class TypeCast                  < Struct.new(:type, :expr)
+    def get_type env
+        if [:INT, :CHAR].include? expr.get_type(env)
+            return type
+        else
+            raise SemanticError.new "can not cast expression of type #{type_to_s expr.get_type(env)} to type #{type_to_s type}"
+        end
+    end
+    def check_semantics env
+        get_type(env) == type
+    end
+end
 
 class AssignNode                < BinaryOperator
     def check_semantics env
         if (left.instance_of?(Identifier) and env[left.name][:class] == :VARIABLE) or left.instance_of?(ArrayLookup)
-            left.check_semantics env
-            right.check_semantics env
-            if [:INT, :CHAR].include? right.get_type(env)
+            if left.get_type(env) == right.get_type(env)
                 return true
             else
                 # error : type mismatch
