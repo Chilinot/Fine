@@ -2,6 +2,7 @@
 lib/lexer/lexer.rb
 lib/parser/parser.rb
 lib/parser/parser.output
+coverage/
 
 # Scrap files
 *.swp
