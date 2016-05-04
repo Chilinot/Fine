@@ -124,25 +124,13 @@ class BinaryOperator            < Struct.new(:left, :right)
     def get_type env
         left_type = left.get_type env
         right_type = right.get_type env
-        if left_type == right_type
-            return right_type
-        else
-            raise SemanticError.new "#{type_to_s left_type} #{self} #{type_to_s right_type} is not defined"
-        end
-    end
-    def check_semantics env
-        get_type env
-    end
-end
-
-
-class AritmeticOperator < BinaryOperator
-    def get_type env
-        left_type = left.get_type env
-        right_type = right.get_type env
         allowed_types = [:INT, :CHAR]
-        if left_type == right_type and allowed_types.include?(right_type)
-            return right_type
+        if allowed_types.include?(right_type) and allowed_types.include?(left_type)
+            if left_type == right_type
+                return right_type
+            else
+                return :INT
+            end
         else
             raise SemanticError.new "#{type_to_s left_type} #{self} #{type_to_s right_type} is not defined"
         end
@@ -151,6 +139,8 @@ class AritmeticOperator < BinaryOperator
         get_type env
     end
 end
+class AritmeticOperator < BinaryOperator; end
+
 class AddNode                   < AritmeticOperator; def to_s; "+" end end
 class SubNode                   < AritmeticOperator; def to_s; "-" end end
 class MulNode                   < AritmeticOperator; def to_s; "*" end end
