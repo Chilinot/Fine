@@ -3,6 +3,7 @@ class Parser
 prechigh
 # Prefix unary operators
 nonassoc "!" # 14R?
+nonassoc ")" # It works like magic! Hack to fix type cast precedance
 # Infix operators
 left "*" "/" # 13L
 left "+" "-" # 12L
