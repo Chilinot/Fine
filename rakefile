@@ -11,7 +11,7 @@ namespace "lexer" do
         sh "rspec --color test/lexer_incorrect_test.rb"
     end
     task "clean" do
-        rm "lib/lexer/lexer.rb"
+        rm_f "lib/lexer/lexer.rb"
     end
 end
 
@@ -25,7 +25,7 @@ namespace "parser" do
         sh "rspec --color test/parser_incorrect_test.rb"
     end
     task "clean" do
-        rm "lib/parser/parser.rb"
+        rm_f "lib/parser/parser.rb"
     end
 end
 
