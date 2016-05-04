@@ -9,6 +9,6 @@ describe "semantic analysis" do
         semantic_analysis( Parser.new.parse content, show_tokens)
     end
     it "semantic/s01.c" do
-        expect(check_semantics("semantic/s01.c")).to true
+        expect(check_semantics("semantic/s01.c")).to eq true
     end
 end
