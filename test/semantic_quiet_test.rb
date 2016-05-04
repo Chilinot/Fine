@@ -8,7 +8,25 @@ describe "semantic analysis" do
         content = read_file absolute_path
         semantic_analysis( Parser.new.parse content, show_tokens)
     end
+    it "semantic/s00.c" do
+        expect(check_semantics("semantic/s00.c")).to eq true
+    end
     it "semantic/s01.c" do
         expect(check_semantics("semantic/s01.c")).to eq true
+    end
+    it "semantic/s02.c" do
+        expect(check_semantics("semantic/s02.c")).to eq true
+    end
+    it "semantic/s03.c" do
+        expect(check_semantics("semantic/s03.c")).to eq true
+    end
+    it "semantic/s04.c" do
+        expect(check_semantics("semantic/s04.c")).to eq true
+    end
+    it "semantic/s05.c" do
+        expect(check_semantics("semantic/s05.c")).to eq true
+    end
+    it "semantic/s06.c" do
+        expect(check_semantics("semantic/s06.c")).to eq true
     end
 end
