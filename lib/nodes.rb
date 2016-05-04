@@ -166,14 +166,26 @@ class OrNode                    < BinaryOperator; def to_s; "||" end end
 
 class AssignNode                < BinaryOperator
     def check_semantics env
-        if (left.instance_of?(Identifier) and env[left.name][:class] == :VARIABLE) or left.instance_of? ArrayLookup
-            if left.get_type(env) == right.get_type(env)
-                # ok
+        if (left.instance_of?(Identifier) and env[left.name][:class] == :VARIABLE) or left.instance_of?(ArrayLookup)
+            left.check_semantics env
+            right.check_semantics env
+            if [:INT, :CHAR].include? right.get_type(env)
                 return true
             else
                 # error : type mismatch
                 raise SemanticError.new "can not assign #{type_to_s right.get_type(env)} to variable of type #{type_to_s left.get_type(env)}"
             end
+            #if left.get_type(env) == right.get_type(env)
+            # left_type = left.get_type env
+            # right_type = right.get_type env
+            # if left_type == right_type
+            #     # ok
+            #     return true
+            # else if
+            # else
+            #     # error : type mismatch
+            #     raise SemanticError.new "can not assign #{type_to_s right.get_type(env)} to variable of type #{type_to_s left.get_type(env)}"
+            # end
         end
 
         # error : can not be assigned
@@ -185,6 +197,7 @@ class AssignNode                < BinaryOperator
 
     end
 end
+
 class FunctionCall              < Struct.new(:name, :args)
     def get_type env
         info = env.lookup name
