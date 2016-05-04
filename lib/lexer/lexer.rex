@@ -6,7 +6,8 @@ macro
     WHITESPACE                          \s+
     NEWLINE                             \n
     SINGLE_LINE_COMMENT                 \/\/.*(\n|\Z)
-    MULTI_LINE_COMMENT                  \/\*([^\*\/]|\n)*\*\/
+    #MULTI_LINE_COMMENT                  \/\*[^(\*\/)]*\*\/
+    MULTI_LINE_COMMENT                  \/\*([^(\*\/)]|\*[^\/]|[^\*]\/)*\*\/
     # \/\*[^\*\/]*\*\/
     COMMENT                             ({MULTI_LINE_COMMENT}|{SINGLE_LINE_COMMENT})
     KEYWORD                             (char|else|if|int|return|void|while)
