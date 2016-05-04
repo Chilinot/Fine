@@ -1,7 +1,7 @@
 int a;
 int foo(int x) {
-  ; }
+  return 42; }
 
-int main(void) {
-  a = foo(a);	
+void main(void) {
+  a = foo(a);
 }

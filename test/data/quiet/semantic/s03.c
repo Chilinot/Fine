@@ -5,6 +5,6 @@ int foo(int x[]) {
   return x[0];
 }
 
-int main(void) {
-  foo(a);	
+void main(void) {
+  foo(a);
 }

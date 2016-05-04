@@ -9,7 +9,7 @@ int main(void) {
   int z;
   char w;
 
-  x = x+y+z+w;
+  x = x+(int)y+z+(int)w;
 
   x = z = 42;
 
@@ -19,11 +19,11 @@ int main(void) {
 
   while (x) { x = 0; }
 
-  if (123) { y = 4; } else { y = 7; }
+  if (123) { y = (char)4; } else { y = (char)7; }
 
-  w = x > y;
+  w = (char)x > y;
 
-  y = 0 < x < 10;
+  y = (char)(0 < x < 10);
 
   42;
   return 42;

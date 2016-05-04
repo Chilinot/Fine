@@ -1,4 +1,4 @@
-int main(void)
+void main(void)
 {
   char s[27];
   char t;
