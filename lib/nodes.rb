@@ -165,17 +165,6 @@ class AssignNode                < BinaryOperator
                 # error : type mismatch
                 raise SemanticError.new "can not assign #{type_to_s right.get_type(env)} to variable of type #{type_to_s left.get_type(env)}"
             end
-            #if left.get_type(env) == right.get_type(env)
-            # left_type = left.get_type env
-            # right_type = right.get_type env
-            # if left_type == right_type
-            #     # ok
-            #     return true
-            # else if
-            # else
-            #     # error : type mismatch
-            #     raise SemanticError.new "can not assign #{type_to_s right.get_type(env)} to variable of type #{type_to_s left.get_type(env)}"
-            # end
         end
 
         # error : can not be assigned
