@@ -29,4 +29,7 @@ describe "semantic analysis" do
     it "semantic/s06.c" do
         expect(check_semantics("semantic/s06.c")).to eq true
     end
+    it "semantic/s07.c" do
+        expect(check_semantics("semantic/s07.c")).to eq true
+    end
 end
