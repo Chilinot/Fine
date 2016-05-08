@@ -190,7 +190,6 @@ class AssignNode                < BinaryOperator
         else
             raise SemanticError.new "can not assign to expression"
         end
-        return false
     end
 end
 
