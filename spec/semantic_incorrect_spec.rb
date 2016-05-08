@@ -13,6 +13,8 @@ describe "semantic analysis" do
             check_semantics file
         rescue SemanticError => e
             return e.message
+        rescue Parser::SyntaxError => e
+            return e.message
         end
     end
     it "semantic/se01.c" do
@@ -122,5 +124,14 @@ describe "semantic analysis" do
     end
     it "semantic/se35.c" do
         expect(semantic_error_message("semantic/se35.c")).to eq "Semantic error: 'fib' expected formal at position 1 to be of type char, but was type int"
+    end
+    it "semantic/se36.c" do
+        expect(semantic_error_message("semantic/se36.c")).to eq "Semantic error: can not cast expression of type int-array to type int"
+    end
+    it "semantic/se37.c" do
+        expect(semantic_error_message("semantic/se37.c")).to eq "syntax error on line 3: can not cast expression to void"
+    end
+    it "semantic/se38.c" do
+        expect(semantic_error_message("semantic/se38.c")).to eq  "Semantic error: char + int is not defined"
     end
 end
