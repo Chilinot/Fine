@@ -41,6 +41,10 @@ def main
     end
 end
 
+def ast_to_string str
+    str.gsub(/#<struct /, "\n<").gsub(",", "").gsub("[", "[").gsub("]", "]\n")
+end
+
 def show_abstract_syntax_tree ast
     puts (ast_to_string ast.to_s).gsub(/\n/, "\n  ")
 end

@@ -8,7 +8,6 @@ describe "parser" do
         Parser.new.parse content, show_tokens
     end
     it "parser/pe01.c" do
-        # puts ast_to_string parse("parser/p08.c", true).inspect
         expect { parse("parser/pe01.c").inspect }.to raise_error Parser::SyntaxError
     end
     it "parser/pe02.c" do

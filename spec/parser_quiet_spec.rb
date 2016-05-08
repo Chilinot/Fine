@@ -37,7 +37,6 @@ describe "lexer" do
 
     end
     it "parser/p08.c" do
-        # puts ast_to_string parse("parser/p08.c", true).inspect
         expect(parse("parser/p08.c").inspect).to eq "#<struct Program nodes=[#<struct FunctionDeclaration type=:INT, name=\"main\", formals=[], body=#<struct FunctionBody declarations=[#<struct VarDeclaration type=:INT, name=\"x\">, #<struct VarDeclaration type=:INT, name=\"y\">], statments=[#<struct If condition=#<struct Identifier name=\"x\">, then_block=[#<struct If condition=#<struct Identifier name=\"y\">, then_block=[#<struct AssignNode left=#<struct Identifier name=\"x\">, right=#<struct Constant type=:INT, value=4711>>], else_block=[#<struct AssignNode left=#<struct Identifier name=\"x\">, right=#<struct Constant type=:INT, value=42>>]>], else_block=nil>]>>]>"
     end
 end
