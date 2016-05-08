@@ -120,4 +120,7 @@ describe "semantic analysis" do
     it "semantic/se34.c" do
         expect(semantic_error_message("semantic/se34.c")).to eq "Semantic error: 'd' expected 2 arguments, but got 3"
     end
+    it "semantic/se35.c" do
+        expect(semantic_error_message("semantic/se35.c")).to eq "Semantic error: 'fib' expected formal at position 1 to be of type char, but was type int"
+    end
 end
