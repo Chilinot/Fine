@@ -48,6 +48,13 @@ class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
             else
                 # TODO: check if formals match!!
                 env[name][:implemented] = true
+
+                extern_formals = env[name][:formals]
+                extern_formals.each_with_index do |formal,i|
+                    if formals[i].get_type(env) != formal.get_type(env)
+                        raise SemanticError.new "'#{name}' expected formal at position #{i+1} to be of type #{type_to_s formal.get_type(env)}, but was type #{type_to_s formals[i].get_type(env)}"
+                    end
+                end
             end
         else
             env[name] = {:class => :FUNCTION, :type => type, :formals => formals, :num_formals => formals.count, :implemented => true}
