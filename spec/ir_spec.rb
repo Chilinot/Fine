@@ -24,4 +24,10 @@ describe "ir" do
     it "handles empty programs" do
         expect(generate_ir (string_to_ast "")).to eq Ir.new []
     end
+    it "handle global int variables" do
+        expect(generate_ir (string_to_ast "int foo;")).to eq Ir.new [GlobalInt.new("foo")]
+    end
+    it "handle global char variables" do
+        expect(generate_ir (string_to_ast "char foo;")).to eq Ir.new [GlobalChar.new("foo")]
+    end
 end
