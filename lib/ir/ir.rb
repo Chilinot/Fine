@@ -17,6 +17,19 @@ end
 class GlobalCharArray < Struct.new(:name, :size)
 end
 
+
+class LocalInt < Struct.new(:name)
+end
+
+class LocalChar < Struct.new(:name)
+end
+
+class LocalIntArray < Struct.new(:name, :size)
+end
+
+class LocalCharArray < Struct.new(:name, :size)
+end
+
 class Function < Struct.new(:name, :type, :formals, :declarations, :instructions)
 end
 

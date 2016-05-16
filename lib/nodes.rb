@@ -9,7 +9,11 @@ class ProgramNode                   < Struct.new(:nodes)
     end
     def generate_ir ir
         nodes.each do |node|
-            node.generate_ir ir
+            if node.instance_of? VariableDeclarationNode or node.instance_of? ArrayDeclarationNode
+                node.generate_ir ir, true # generate global declarations
+            else
+                node.generate_ir ir
+            end
         end
         return ir
     end
@@ -23,11 +27,20 @@ class VariableDeclarationNode            < Struct.new(:type, :name)
         env[name] = {:class => :VARIABLE, :type => type}
         return true
     end
-    def generate_ir ir
+    def generate_ir ir, global = false
         case type
-        when :INT then ir << GlobalInt.new(name)
-        when :CHAR then ir << GlobalChar.new(name)
-        else raise "unable to generate ir for type #{type}"
+        when :INT
+            if global
+            then ir << GlobalInt.new(name)
+            else ir << LocalInt.new(name)
+            end
+        when :CHAR
+            if global
+            then ir << GlobalChar.new(name)
+            else ir << LocalChar.new(name)
+            end
+        else
+            raise "unable to generate ir for type #{type}"
         end
     end
 end
@@ -39,11 +52,20 @@ class ArrayDeclarationNode          < Struct.new(:type, :name, :num_elements)
         env[name] =  {:class => :ARRAY, :type => type }
         return true
     end
-    def generate_ir ir
+    def generate_ir ir, global = false
         case type
-        when :INT then ir << GlobalIntArray.new(name,num_elements)
-        when :CHAR then ir << GlobalCharArray.new(name,num_elements)
-        else raise "oops!"
+        when :INT
+            if global
+            then ir << GlobalIntArray.new(name, num_elements)
+            else ir << LocalIntArray.new(name, num_elements)
+            end
+        when :CHAR
+            if global
+            then ir << GlobalCharArray.new(name, num_elements)
+            else ir << LocalCharArray.new(name, num_elements)
+            end
+        else
+            raise "unable to generate ir for array of type #{type}"
         end
         return ir
     end
@@ -101,7 +123,7 @@ class FunctionDeclarationNode       < Struct.new(:type, :name, :formals, :body)
 
         ir_declarations = []
         body.declarations.each do |d|
-            ir_declarations << {:name => d.name, :type => d.get_type(:no_environment)}
+            d.generate_ir ir_declarations
         end
 
         ir_statments = []

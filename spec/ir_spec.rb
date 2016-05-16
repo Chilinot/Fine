@@ -51,4 +51,19 @@ describe "ir" do
     it "handles functions with explicit empty return" do
         expect(generate_ir (string_to_ast "void main(void) { return; }")).to eq Ir.new [ Function.new("main",:VOID, [],[],[Return.new(:VOID)]) ]
     end
+    it "handles functions with local char" do
+        expect(generate_ir (string_to_ast "void main(void) { int foo; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalInt.new("foo")],[]) ]
+    end
+    it "handles functions with local int" do
+        expect(generate_ir (string_to_ast "void main(void) { char foo; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalChar.new("foo")],[]) ]
+    end
+    it "handles functions with multiple local variables" do
+        expect(generate_ir (string_to_ast "void main(void) { int foo; char bar; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalInt.new("foo"), LocalChar.new("bar")],[]) ]
+    end
+    it "handles functions with local int-array" do
+        expect(generate_ir (string_to_ast "void main(void) { int foo[42]; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalIntArray.new("foo", 42)],[]) ]
+    end
+    it "handles functions with local char-array" do
+        expect(generate_ir (string_to_ast "void main(void) { char foo[22]; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalCharArray.new("foo",22)],[]) ]
+    end
 end
