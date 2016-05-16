@@ -30,4 +30,13 @@ describe "ir" do
     it "handle global char variables" do
         expect(generate_ir (string_to_ast "char foo;")).to eq Ir.new [GlobalChar.new("foo")]
     end
+    it "handle global int arrays" do
+        expect(generate_ir (string_to_ast "int foo[42];")).to eq Ir.new [GlobalIntArray.new("foo",42)]
+    end
+    it "handle global char arrays" do
+        expect(generate_ir (string_to_ast "char foo[42];")).to eq Ir.new [GlobalCharArray.new("foo",42)]
+    end
+    it "handle global int and char array" do
+        expect(generate_ir (string_to_ast "int foo; char bar[2];")).to eq Ir.new [GlobalInt.new("foo"),GlobalCharArray.new("bar",2)]
+    end
 end

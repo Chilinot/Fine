@@ -10,3 +10,9 @@ end
 
 class GlobalChar < Struct.new(:name)
 end
+
+class GlobalIntArray < Struct.new(:name, :size)
+end
+
+class GlobalCharArray < Struct.new(:name, :size)
+end

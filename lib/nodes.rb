@@ -39,6 +39,14 @@ class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
         env[name] =  {:class => :ARRAY, :type => type }
         return true
     end
+    def generate_ir ir
+        case type
+        when :INT then ir << GlobalIntArray.new(name,num_elements)
+        when :CHAR then ir << GlobalCharArray.new(name,num_elements)
+        else raise "oops!"
+        end
+        return ir
+    end
 end
 class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
     def check_semantics env
