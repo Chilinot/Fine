@@ -93,6 +93,24 @@ class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
         env.pop_scope
         return true
     end
+    def generate_ir ir
+        ir_formals = []
+        formals.each do |f|
+            ir_formals << {:name => f.name, :type => f.get_type(:no_environment)}
+        end
+
+        ir_declarations = []
+        body.declarations.each do |d|
+            ir_declarations << {:name => d.name, :type => d.get_type(:no_environment)}
+        end
+
+        ir_statments = []
+        body.statments.each do |s|
+            s.generate_ir ir_statments
+        end
+
+        ir << Function.new(name, type, ir_formals, ir_declarations, ir_statments)
+    end
 end
 
 class FunctionBody              < Struct.new(:declarations, :statments)

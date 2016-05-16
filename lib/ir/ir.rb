@@ -16,3 +16,6 @@ end
 
 class GlobalCharArray < Struct.new(:name, :size)
 end
+
+class Function < Struct.new(:name, :type, :formals, :declarations, :instructions)
+end

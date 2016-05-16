@@ -42,4 +42,7 @@ describe "ir" do
     it "ignores extern declaration" do
         expect(generate_ir (string_to_ast "void main(void);")).to eq Ir.new []
     end
+    it "handles simple function declaration" do
+        expect(generate_ir (string_to_ast "void main(void) {}")).to eq Ir.new [ Function.new("main",:VOID, [],[],[]) ]
+    end
 end
