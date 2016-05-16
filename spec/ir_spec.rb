@@ -18,7 +18,6 @@ describe "ir" do
         rescue SemanticError => e
             puts e
         end
-        exit
     end
 
     it "handles empty programs" do
