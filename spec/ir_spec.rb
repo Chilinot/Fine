@@ -45,4 +45,8 @@ describe "ir" do
     it "handles simple function declaration" do
         expect(generate_ir (string_to_ast "void main(void) {}")).to eq Ir.new [ Function.new("main",:VOID, [],[],[]) ]
     end
+    it "handles functions with formals" do
+        expect(generate_ir (string_to_ast "void f(int a, int b) {  }")).to eq Ir.new [ Function.new("f",:VOID, [{:type => :INT, :name => "a"},
+                                                                                                                {:type => :INT, :name => "b"}],[],[]) ]
+    end
 end
