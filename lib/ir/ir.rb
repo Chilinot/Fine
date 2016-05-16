@@ -19,3 +19,6 @@ end
 
 class Function < Struct.new(:name, :type, :formals, :declarations, :instructions)
 end
+
+class Return < Struct.new(:register)
+end

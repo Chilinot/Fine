@@ -263,6 +263,12 @@ class CallNode              < Struct.new(:name, :args)
 end
 
 class ReturnNode                    < Struct.new(:expr)
+    def get_type env
+        if expr != :VOID
+            return expr.get_type env
+        end
+        return :VOID
+    end
     def check_semantics env
         return_type = env.current_return_type
 
@@ -270,10 +276,15 @@ class ReturnNode                    < Struct.new(:expr)
             raise SemanticError.new "attempt to return value from procedure"
         elsif return_type != :VOID and expr == :VOID
             raise SemanticError.new "void return from function"
-        elsif expr.get_type(env) != return_type
+        elsif expr != :VOID and expr.get_type(env) != return_type
             raise SemanticError.new "expression does not match return type"
         end
         return true
+    end
+    def generate_ir ir
+        if expr == :VOID
+            ir << Return.new(:VOID)
+        end
     end
 end
 class WhileNode                     < Struct.new(:condition, :body)

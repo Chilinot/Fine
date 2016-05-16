@@ -48,4 +48,7 @@ describe "ir" do
         expect(generate_ir (string_to_ast "void f(int a, int b) {  }")).to eq Ir.new [ Function.new("f",:VOID, [{:type => :INT, :name => "a"},
                                                                                                                 {:type => :INT, :name => "b"}],[],[]) ]
     end
+    it "handles functions with explicit empty return" do
+        expect(generate_ir (string_to_ast "void main(void) { return; }")).to eq Ir.new [ Function.new("main",:VOID, [],[],[Return.new(:VOID)]) ]
+    end
 end
