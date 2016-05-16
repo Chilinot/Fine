@@ -39,4 +39,7 @@ describe "ir" do
     it "handle global int and char array" do
         expect(generate_ir (string_to_ast "int foo; char bar[2];")).to eq Ir.new [GlobalInt.new("foo"),GlobalCharArray.new("bar",2)]
     end
+    it "ignores extern declaration" do
+        expect(generate_ir (string_to_ast "void main(void);")).to eq Ir.new []
+    end
 end

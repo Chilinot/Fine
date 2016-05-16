@@ -57,6 +57,9 @@ class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
         end
         return true
     end
+    def generate_ir ir
+        return ir
+    end
 end
 
 class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
