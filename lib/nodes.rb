@@ -7,6 +7,12 @@ class Program                   < Struct.new(:nodes)
         end
         return true
     end
+    def generate_ir ir
+        nodes.each do |node|
+            node.generate_ir ir
+        end
+        return ir
+    end
 end
 
 class VarDeclaration            < Struct.new(:type, :name)
@@ -16,6 +22,13 @@ class VarDeclaration            < Struct.new(:type, :name)
     def check_semantics env
         env[name] = {:class => :VARIABLE, :type => type}
         return true
+    end
+    def generate_ir ir
+        case type
+        when :INT then ir << GlobalInt.new(name)
+        when :CHAR then ir << GlobalChar.new(name)
+        else raise "unable to generate ir for type #{type}"
+        end
     end
 end
 class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
