@@ -26,14 +26,14 @@ start program
 # ---- [grammar] -------------------------------------------------------
 rule
 
-    program : topdec_list                                   { result = Program.new(val[0]) }
+    program : topdec_list                                   { result = ProgramNode.new(val[0]) }
 
     topdec_list : /* empty */                               { result = [] }
                 | topdec topdec_list                        { result = val[1].unshift(val[0]) }
 
     topdec : typename IDENTIFIER "(" formals ")" funbody    { case val[5]
-                                                                when :empty then result = ExternFunctionDeclaration.new(val[0], val[1].value, val[3])
-                                                                else result = FunctionDeclaration.new(val[0], val[1].value, val[3], val[5])
+                                                                when :empty then result = ExternFunctionDeclarationNode.new(val[0], val[1].value, val[3])
+                                                                else result = FunctionDeclarationNode.new(val[0], val[1].value, val[3], val[5])
                                                               end }
            | vardec ";"
 
@@ -41,13 +41,13 @@ rule
            | arraydec
 
     scalardec : typename IDENTIFIER                         { if val[0] != :VOID
-                                                                result = VarDeclaration.new(val[0], val[1].value)
+                                                                result = VariableDeclarationNode.new(val[0], val[1].value)
                                                               else
                                                                   raise SyntaxError.new(val[1].line, "variable #{val[1]} can not be of type void")
                                                               end }
 
     arraydec  : typename IDENTIFIER "[" INT_LITERAL "]"     { if val[0] != :VOID
-                                                                result = ArrayDeclaration.new(val[0], val[1].value, val[3].value)
+                                                                result = ArrayDeclarationNode.new(val[0], val[1].value, val[3].value)
                                                               else
                                                                   raise SyntaxError.new(val[1].line, "Array #{val[1].value} can not be of type void")
                                                               end }
@@ -57,7 +57,7 @@ rule
              | CHAR                                         { result = val[0].value.upcase.to_sym }
              | VOID                                         { result = val[0].value.upcase.to_sym }
 
-    funbody : "{" locals stmts "}"                          { result = FunctionBody.new(val[1], val[2]) }
+    funbody : "{" locals stmts "}"                          { result = FunctionBodyNode.new(val[1], val[2]) }
             | ";"                                           { result = :empty }
 
     formals : VOID                                          { result = [] }
@@ -69,7 +69,7 @@ rule
 
     formaldec : scalardec
               | typename IDENTIFIER "[" "]"                 { if val[0] != :VOID
-                                                                result = ArrayDeclaration.new(val[0], val[1].value)
+                                                                result = ArrayDeclarationNode.new(val[0], val[1].value)
                                                               else
                                                                   raise SyntaxError.new(val[1].line, "Array #{val[1].value} can not be of type void")
                                                               end }
@@ -88,12 +88,12 @@ rule
          | if                                               { result = val[0] }
          | block                                            { result = val[0] }
 
-    while : WHILE condition block                           { result = While.new(val[1], val[2]) }
+    while : WHILE condition block                           { result = WhileNode.new(val[1], val[2]) }
 
-    return : RETURN expr ";"                                { result = Return.new(val[1]) }
-           | RETURN ";"                                     { result = Return.new(:VOID) }
+    return : RETURN expr ";"                                { result = ReturnNode.new(val[1]) }
+           | RETURN ";"                                     { result = ReturnNode.new(:VOID) }
 
-      if : IF condition block else                          { result = If.new(val[1], val[2], val[3]) }
+      if : IF condition block else                          { result = IfNode.new(val[1], val[2], val[3]) }
     else : /* empty */
          | ELSE if                                          { result = [val[1]] }
          | ELSE block                                       { result = val[1] }
@@ -103,9 +103,9 @@ rule
     condition : "(" ")"                                     { raise SyntaxError.new(val[1].line, "expected condition, but found \")\"") }
               | "(" expr ")"                                { result = val[1] }
 
-    expr : INT_LITERAL                                      { result = Constant.new(:INT, val[0].value) }
-         | CHAR_LITERAL                                     { result = Constant.new(:CHAR, val[0].value) }
-         | IDENTIFIER                                       { result = Identifier.new(val[0].value) }
+    expr : INT_LITERAL                                      { result = ConstantNode.new(:INT, val[0].value) }
+         | CHAR_LITERAL                                     { result = ConstantNode.new(:CHAR, val[0].value) }
+         | IDENTIFIER                                       { result = IdentifierNode.new(val[0].value) }
          | IDENTIFIER "[" expr "]"                          { result = ArrayLookup.new(val[0].value, val[2]) }
          | "(" typename ")" expr                            { if val[1] != :VOID
                                                                   result = TypeCast.new(val[1], val[3])
@@ -128,7 +128,7 @@ rule
          | expr "=" expr                                    { result = AssignNode.new(val[0], val[2]) }
          | "-" expr                                         { result = UnaryMinus.new(val[1]) }
          | "!" expr                                         { result = Not.new(val[1]) }
-         | IDENTIFIER "(" actuals ")"                       { result = FunctionCall.new(val[0].value, val[2]) }
+         | IDENTIFIER "(" actuals ")"                       { result = CallNode.new(val[0].value, val[2]) }
          | "(" expr ")"                                     { result = val[1] }
 
     actuals : /* empty */                                   { result = [] }

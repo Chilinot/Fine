@@ -1,6 +1,6 @@
 require_relative "semantic/error.rb"
 
-class Program                   < Struct.new(:nodes)
+class ProgramNode                   < Struct.new(:nodes)
     def check_semantics env
         nodes.each do |node|
             node.check_semantics env
@@ -15,7 +15,7 @@ class Program                   < Struct.new(:nodes)
     end
 end
 
-class VarDeclaration            < Struct.new(:type, :name)
+class VariableDeclarationNode            < Struct.new(:type, :name)
     def get_type env
         type
     end
@@ -31,7 +31,7 @@ class VarDeclaration            < Struct.new(:type, :name)
         end
     end
 end
-class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
+class ArrayDeclarationNode          < Struct.new(:type, :name, :num_elements)
     def get_type env
         "#{type}_ARRAY".to_sym
     end
@@ -48,7 +48,7 @@ class ArrayDeclaration          < Struct.new(:type, :name, :num_elements)
         return ir
     end
 end
-class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
+class ExternFunctionDeclarationNode < Struct.new(:type, :name, :formals)
     def check_semantics env
         if env.defined? name
             raise SemanticError.new "'#{name}' already defined as #{type_to_s env[name][:class]}"
@@ -62,7 +62,7 @@ class ExternFunctionDeclaration < Struct.new(:type, :name, :formals)
     end
 end
 
-class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
+class FunctionDeclarationNode       < Struct.new(:type, :name, :formals, :body)
     def check_semantics env
         if env.defined? name
             if env[name][:class] != :FUNCTION
@@ -113,20 +113,20 @@ class FunctionDeclaration       < Struct.new(:type, :name, :formals, :body)
     end
 end
 
-class FunctionBody              < Struct.new(:declarations, :statments)
+class FunctionBodyNode              < Struct.new(:declarations, :statments)
     def check_semantics env
         declarations.each do |decl|
             decl.check_semantics env
         end
         statments.each do |stmt|
-            env.found_return_in_current_scope if stmt.instance_of? Return
+            env.found_return_in_current_scope if stmt.instance_of? ReturnNode
             stmt.check_semantics env
         end
         return true
     end
 end
 
-class Constant                  < Struct.new(:type, :value)
+class ConstantNode                  < Struct.new(:type, :value)
     def get_type env
         type
     end
@@ -134,7 +134,7 @@ class Constant                  < Struct.new(:type, :value)
         return true
     end
 end
-class Identifier                < Struct.new(:name)
+class IdentifierNode                < Struct.new(:name)
     def get_type env
         if [:ARRAY, :FUNCTION].include? env[name][:class]
             "#{env[name][:type]}_#{env[name][:class]}".to_sym
@@ -217,7 +217,7 @@ end
 
 class AssignNode                < BinaryOperator
     def check_semantics env
-        if (left.instance_of?(Identifier) and env[left.name][:class] == :VARIABLE) or left.instance_of?(ArrayLookup)
+        if (left.instance_of?(IdentifierNode) and env[left.name][:class] == :VARIABLE) or left.instance_of?(ArrayLookup)
             if left.get_type(env) == right.get_type(env)
                 return true
             else
@@ -227,7 +227,7 @@ class AssignNode                < BinaryOperator
         end
 
         # error : can not be assigned
-        if left.instance_of? Identifier
+        if left.instance_of? IdentifierNode
             raise SemanticError.new "can not assign to #{type_to_s env[left.name][:class]} reference '#{left.name}'"
         else
             raise SemanticError.new "can not assign to expression"
@@ -235,7 +235,7 @@ class AssignNode                < BinaryOperator
     end
 end
 
-class FunctionCall              < Struct.new(:name, :args)
+class CallNode              < Struct.new(:name, :args)
     def get_type env
         info = env.lookup name
         check_semantics env
@@ -262,7 +262,7 @@ class FunctionCall              < Struct.new(:name, :args)
     end
 end
 
-class Return                    < Struct.new(:expr)
+class ReturnNode                    < Struct.new(:expr)
     def check_semantics env
         return_type = env.current_return_type
 
@@ -276,14 +276,14 @@ class Return                    < Struct.new(:expr)
         return true
     end
 end
-class While                     < Struct.new(:condition, :body)
+class WhileNode                     < Struct.new(:condition, :body)
     def check_semantics env
         condition.check_semantics env
         body.each { |stmt| stmt.check_semantics env }
         return true
     end
 end
-class If                        < Struct.new(:condition, :then_block, :else_block)
+class IfNode                        < Struct.new(:condition, :then_block, :else_block)
     def check_semantics env
         condition.check_semantics env
         then_block.each { |stmt| stmt.check_semantics env }
