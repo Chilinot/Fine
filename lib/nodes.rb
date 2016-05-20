@@ -171,6 +171,9 @@ class IdentifierNode                < Struct.new(:name)
     def check_semantics env
         env.defined? name
     end
+    def generate_ir ir, allocator
+        Id.new(name)
+    end
 end
 
 class ArrayLookup               < Struct.new(:name, :expr)
@@ -213,6 +216,25 @@ class BinaryOperator            < Struct.new(:left, :right)
         get_type env
         return true
     end
+    def generate_ir ir, allocator
+        ast_nodes = {
+                AddNode          => Add,
+                SubNode          => Sub,
+                MulNode          => Mul,
+                DivNode          => Div,
+                LessThanNode     => LessThan,
+                GreaterThanNode  => GreaterThan,
+                LessEqualNode    => LessEqual,
+                GreaterEqualNode => GreaterEqual,
+                NotEqualNode     => NotEqual,
+                EqualNode        => Equal,
+                AndNode          => And,
+                OrNode           => Or
+        }
+        temp = allocator.new_temporary
+        ir << ast_nodes[self.class].new(temp, left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
+        temp
+    end
 end
 class AritmeticOperator < BinaryOperator; end
 
@@ -228,6 +250,7 @@ class NotEqualNode              < BinaryOperator; def to_s; "!=" end end
 class EqualNode                 < BinaryOperator; def to_s; "==" end end
 class AndNode                   < BinaryOperator; def to_s; "&&" end end
 class OrNode                    < BinaryOperator; def to_s; "||" end end
+
 class TypeCast                  < Struct.new(:type, :expr)
     def get_type env
         if [:INT, :CHAR].include? expr.get_type(env)

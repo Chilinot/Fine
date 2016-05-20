@@ -77,11 +77,69 @@ describe "ir" do
         expect(generate_ir (string_to_ast "char main(void) { return 'a'; }")).to eq Ir.new [ Function.new("main",:CHAR, [],[],[Return.new(Constant.new(97))]) ]
     end
     it "handles functions returning a 1 + 2" do
-        expect(generate_ir (string_to_ast "int main(void) { return 'a'; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
+        expect(generate_ir (string_to_ast "int main(void) { return 1 + 2; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
             [
                 Add.new(Temporary.new(1), Constant.new(1), Constant.new(2)),
                 Return.new(Temporary.new(1))
             ]
         )]
+    end
+    it "handles functions returning a 1 + 2 - 3" do
+        expect(generate_ir (string_to_ast "int main(void) { return 1 + 2 - 3; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
+            [
+                Add.new(Temporary.new(2), Constant.new(1), Constant.new(2)),
+                Sub.new(Temporary.new(1), Temporary.new(2), Constant.new(3)),
+                Return.new(Temporary.new(1))
+            ]
+        )]
+    end
+    it "handles many things" do
+        ast_nodes = {
+                AddNode          => Add,
+                SubNode          => Sub,
+                MulNode          => Mul,
+                DivNode          => Div,
+                LessThanNode     => LessThan,
+                GreaterThanNode  => GreaterThan,
+                LessEqualNode    => LessEqual,
+                GreaterEqualNode => GreaterEqual,
+                NotEqualNode     => NotEqual,
+                EqualNode        => Equal,
+                AndNode          => And,
+                OrNode           => Or
+        }
+        ast_nodes.each do |ast, ir|
+            expect(generate_ir (string_to_ast "int main(void) { return 1 #{ast.new} 2; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
+                [
+                    ir.new(Temporary.new(1), Constant.new(1), Constant.new(2)),
+                    Return.new(Temporary.new(1))
+                ]
+            )]
+        end
+    end
+    it "handles more complex expressions" do
+            expect(generate_ir (string_to_ast "int main(void) { return 42 + 2 != 42 - 2 * 33; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
+                [
+                    Add.new(Temporary.new(2), Constant.new(42), Constant.new(2)),
+                    Mul.new(Temporary.new(4), Constant.new(2), Constant.new(33)),
+                    Sub.new(Temporary.new(3), Constant.new(42), Temporary.new(4)),
+                    NotEqual.new(Temporary.new(1), Temporary.new(2), Temporary.new(3)),
+                    Return.new(Temporary.new(1))
+                ]
+            )]
+
+    end
+    it "handles functions returning a global + local identifiers" do
+        expect(generate_ir (string_to_ast "int foo; int main(void) { int bar; return foo + bar; }")).to eq Ir.new [
+            GlobalInt.new("foo"),
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("bar")
+            ],
+            [
+                Add.new(Temporary.new(1), Id.new("foo"), Id.new("bar")),
+                Return.new(Temporary.new(1))
+            ])
+        ]
     end
 end

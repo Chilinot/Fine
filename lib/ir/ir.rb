@@ -1,36 +1,42 @@
 class Temporary
+    attr_reader :index
     def initialize index
         @index = index
     end
     def to_s
         "##{index}"
     end
-    def == index
-        @index == index
+    def == temporary
+        @index == temporary.index
     end
 end
 
 class Id
+    attr_reader :name
     def initialize name
         @name = name
+    end
+    def inspect
+        to_s
     end
     def to_s
         "##{name}"
     end
-    def == name
-        @name == name
+    def == id
+        @name == id.name
     end
 end
 
 class Constant
+    attr_reader :value
     def initialize value
         @value = value
     end
     def to_s
         "#{value}"
     end
-    def == value
-        @value == value
+    def == constant
+        @value == constant.value
     end
 end
 
@@ -81,3 +87,22 @@ end
 
 class Return < Struct.new(:register)
 end
+
+class Binop < Struct.new(:destination, :left, :right); end
+
+class Add          < Binop; end
+class Sub          < Binop; end
+class Mul          < Binop; end
+class Div          < Binop; end
+class LessThan     < Binop; end
+class GreaterThan  < Binop; end
+class LessEqual    < Binop; end
+class GreaterEqual < Binop; end
+class NotEqual     < Binop; end
+class Equal        < Binop; end
+class And          < Binop; end
+class Or           < Binop; end
+
+
+
+
