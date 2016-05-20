@@ -162,4 +162,14 @@ describe "ir" do
             ])
         ]
     end
+    it "handles functions returning negated array element" do
+        expect(generate_ir (string_to_ast "int foo[4]; int main(void) { return -foo[2]; }")).to eq Ir.new [
+            GlobalIntArray.new("foo", 4),
+            Function.new("main",:INT, [], [],
+            [
+                Sub.new(Temporary.new(1), Constant.new(0), IntArrayElement.new("foo", Constant.new(2))),
+                Return.new(Temporary.new(1))
+            ])
+        ]
+    end
 end
