@@ -5,10 +5,14 @@ require_relative "../lib/ir/ir.rb"
 
 
 describe "ir" do
-    def string_to_ast string
+    def string_to_ast string, show_ast = false
         begin
             ast = Parser.new.parse string
             if semantic_analysis(ast)
+                if show_ast
+                    puts "---------------------------------"
+                    puts ast
+                end
                 return ast
             end
         rescue Lexer::LexicalError => e
