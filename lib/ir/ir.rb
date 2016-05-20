@@ -103,6 +103,7 @@ class Equal        < Binop; end
 class And          < Binop; end
 class Or           < Binop; end
 
-
-
+class ArrayElement < Struct.new(:name, :index); end
+class IntArrayElement < ArrayElement; end
+class CharArrayElement < ArrayElement; end
 

@@ -142,4 +142,24 @@ describe "ir" do
             ])
         ]
     end
+    it "handles functions returning array element" do
+        expect(generate_ir (string_to_ast "int foo[4]; int main(void) { return foo[2]; }")).to eq Ir.new [
+            GlobalIntArray.new("foo", 4),
+            Function.new("main",:INT, [], [],
+            [
+                Return.new(IntArrayElement.new("foo", Constant.new(2)))
+            ])
+        ]
+    end
+    it "handles functions returning array element index by expression" do
+        expect(generate_ir (string_to_ast "int foo[4]; int main(void) { return foo[1 / 0 + 10]; }")).to eq Ir.new [
+            GlobalIntArray.new("foo", 4),
+            Function.new("main",:INT, [], [],
+            [
+                Div.new(Temporary.new(2), Constant.new(1), Constant.new(0)),
+                Add.new(Temporary.new(1), Temporary.new(2), Constant.new(10)),
+                Return.new(IntArrayElement.new("foo", Temporary.new(1)))
+            ])
+        ]
+    end
 end

@@ -186,7 +186,7 @@ class ArrayLookupNode               < Struct.new(:name, :expr)
         return true
     end
     def generate_ir ir, allocator
-
+        IntArrayElement.new(name, expr.generate_ir(ir, allocator))
     end
 end
 
@@ -196,6 +196,11 @@ class UnaryMinusNode                < Struct.new(:expr)
     end
     def check_semantics env
         expr.check_semantics env
+    end
+    def generate_ir ir, allocator
+        temp = allocator.new_temporary
+        ir << Sub.new(temp, Constant.new(0), expr.generate_ir(ir, allocator))
+        temp
     end
 end
 
