@@ -182,4 +182,14 @@ describe "ir" do
             ])
         ]
     end
+    it "handles functions returning casted array element" do
+        expect(generate_ir (string_to_ast "char foo[4]; int main(void) { return (int)foo[2]; }")).to eq Ir.new [
+            GlobalCharArray.new("foo", 4),
+            Function.new("main",:INT, [], [],
+            [
+                Cast.new(Temporary.new(1), CharArrayElement.new("foo", Constant.new(2)), :CHAR, :INT),
+                Return.new(Temporary.new(1))
+            ])
+        ]
+    end
 end

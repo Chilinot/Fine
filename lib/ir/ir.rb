@@ -108,3 +108,5 @@ class IntArrayElement < ArrayElement; end
 class CharArrayElement < ArrayElement; end
 
 class Not < Struct.new(:destination, :op); end
+
+class Cast < Struct.new(:destination, :op, :from, :to); end

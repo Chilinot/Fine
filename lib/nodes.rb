@@ -178,15 +178,23 @@ end
 
 class ArrayLookupNode               < Struct.new(:name, :expr)
     def get_type env
+        @type = env[name][:type]
         check_semantics env
-        env[name][:type]
+        @type
     end
     def check_semantics env
         raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
     end
     def generate_ir ir, allocator
-        IntArrayElement.new(name, expr.generate_ir(ir, allocator))
+        case @type
+        when :INT
+            IntArrayElement.new(name, expr.generate_ir(ir, allocator))
+        when :CHAR
+            CharArrayElement.new(name, expr.generate_ir(ir, allocator))
+        else
+            raise "unable to generate ir array of type #{type}"
+        end
     end
 end
 
@@ -268,7 +276,8 @@ class OrNode                    < BinaryOperator; def to_s; "||" end end
 
 class TypeCastNode                  < Struct.new(:type, :expr)
     def get_type env
-        if [:INT, :CHAR].include? expr.get_type(env)
+         @expr_type = expr.get_type(env)
+        if [:INT, :CHAR].include? @expr_type
             return type
         else
             raise SemanticError.new "can not cast expression of type #{type_to_s expr.get_type(env)} to type #{type_to_s type}"
@@ -276,6 +285,15 @@ class TypeCastNode                  < Struct.new(:type, :expr)
     end
     def check_semantics env
         get_type(env) == type
+    end
+    def generate_ir ir, allocator
+        if type == @expr_type # discard if same type
+            return expr.generate_ir(ir, allocator)
+        end
+
+        temp = allocator.new_temporary
+        ir << Cast.new(temp, expr.generate_ir(ir, allocator), @expr_type, type)
+        temp
     end
 end
 
