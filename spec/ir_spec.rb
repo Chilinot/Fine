@@ -66,4 +66,18 @@ describe "ir" do
     it "handles functions with local char-array" do
         expect(generate_ir (string_to_ast "void main(void) { char foo[22]; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalCharArray.new("foo",22)],[]) ]
     end
+    it "handles functions returning a int constant" do
+        expect(generate_ir (string_to_ast "int main(void) { return 42; }")).to eq Ir.new [ Function.new("main",:INT, [],[],[Return.new(Constant.new(42))]) ]
+    end
+    it "handles functions returning a char constant" do
+        expect(generate_ir (string_to_ast "char main(void) { return 'a'; }")).to eq Ir.new [ Function.new("main",:CHAR, [],[],[Return.new(Constant.new(97))]) ]
+    end
+    it "handles functions returning a 1 + 2" do
+        expect(generate_ir (string_to_ast "int main(void) { return 'a'; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
+            [
+                Add.new(Temporary.new(1), Constant.new(1), Constant.new(2)),
+                Return.new(Temporary.new(1))
+            ]
+        )]
+    end
 end

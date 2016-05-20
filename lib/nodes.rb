@@ -128,7 +128,7 @@ class FunctionDeclarationNode       < Struct.new(:type, :name, :formals, :body)
 
         ir_statments = []
         body.statments.each do |s|
-            s.generate_ir ir_statments
+            s.generate_ir ir_statments, TempAllocator.new
         end
 
         ir << Function.new(name, type, ir_formals, ir_declarations, ir_statments)
@@ -155,7 +155,11 @@ class ConstantNode                  < Struct.new(:type, :value)
     def check_semantics env
         return true
     end
+    def generate_ir ir, _
+        Constant.new(value.ord)
+    end
 end
+
 class IdentifierNode                < Struct.new(:name)
     def get_type env
         if [:ARRAY, :FUNCTION].include? env[name][:class]
@@ -303,9 +307,11 @@ class ReturnNode                    < Struct.new(:expr)
         end
         return true
     end
-    def generate_ir ir
+    def generate_ir ir, temp_allocator
         if expr == :VOID
             ir << Return.new(:VOID)
+        else
+            ir << Return.new(expr.generate_ir(ir, temp_allocator))
         end
     end
 end
