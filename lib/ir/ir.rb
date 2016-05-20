@@ -85,10 +85,10 @@ end
 class Function < Struct.new(:name, :type, :formals, :declarations, :instructions)
 end
 
-class Return < Struct.new(:register)
+class Return < Struct.new(:op)
 end
 
-class Binop < Struct.new(:destination, :left, :right); end
+class Binop < Struct.new(:destination, :op1, :op2); end
 
 class Add          < Binop; end
 class Sub          < Binop; end
