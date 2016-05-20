@@ -106,9 +106,9 @@ rule
     expr : INT_LITERAL                                      { result = ConstantNode.new(:INT, val[0].value) }
          | CHAR_LITERAL                                     { result = ConstantNode.new(:CHAR, val[0].value) }
          | IDENTIFIER                                       { result = IdentifierNode.new(val[0].value) }
-         | IDENTIFIER "[" expr "]"                          { result = ArrayLookup.new(val[0].value, val[2]) }
+         | IDENTIFIER "[" expr "]"                          { result = ArrayLookupNode.new(val[0].value, val[2]) }
          | "(" typename ")" expr                            { if val[1] != :VOID
-                                                                  result = TypeCast.new(val[1], val[3])
+                                                                  result = TypeCastNode.new(val[1], val[3])
                                                               else
                                                                   raise SyntaxError.new(val[0].line, "can not cast expression to void")
                                                               end }
@@ -126,8 +126,8 @@ rule
          | expr "&&" expr                                   { result = AndNode.new(val[0], val[2]) }
          | expr "||" expr                                   { result = OrNode.new(val[0], val[2]) }
          | expr "=" expr                                    { result = AssignNode.new(val[0], val[2]) }
-         | "-" expr                                         { result = UnaryMinus.new(val[1]) }
-         | "!" expr                                         { result = Not.new(val[1]) }
+         | "-" expr                                         { result = UnaryMinusNode.new(val[1]) }
+         | "!" expr                                         { result = NotNode.new(val[1]) }
          | IDENTIFIER "(" actuals ")"                       { result = CallNode.new(val[0].value, val[2]) }
          | "(" expr ")"                                     { result = val[1] }
 

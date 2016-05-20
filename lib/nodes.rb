@@ -176,7 +176,7 @@ class IdentifierNode                < Struct.new(:name)
     end
 end
 
-class ArrayLookup               < Struct.new(:name, :expr)
+class ArrayLookupNode               < Struct.new(:name, :expr)
     def get_type env
         check_semantics env
         env[name][:type]
@@ -185,8 +185,12 @@ class ArrayLookup               < Struct.new(:name, :expr)
         raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
     end
+    def generate_ir ir, allocator
+
+    end
 end
-class UnaryMinus                < Struct.new(:expr)
+
+class UnaryMinusNode                < Struct.new(:expr)
     def get_type env
         expr.get_type env
     end
@@ -194,7 +198,8 @@ class UnaryMinus                < Struct.new(:expr)
         expr.check_semantics env
     end
 end
-class Not                       < Struct.new(:expr)
+
+class NotNode                       < Struct.new(:expr)
     def get_type env
         expr.get_type env
     end
@@ -251,7 +256,7 @@ class EqualNode                 < BinaryOperator; def to_s; "==" end end
 class AndNode                   < BinaryOperator; def to_s; "&&" end end
 class OrNode                    < BinaryOperator; def to_s; "||" end end
 
-class TypeCast                  < Struct.new(:type, :expr)
+class TypeCastNode                  < Struct.new(:type, :expr)
     def get_type env
         if [:INT, :CHAR].include? expr.get_type(env)
             return type
@@ -266,7 +271,7 @@ end
 
 class AssignNode                < BinaryOperator
     def check_semantics env
-        if (left.instance_of?(IdentifierNode) and env[left.name][:class] == :VARIABLE) or left.instance_of?(ArrayLookup)
+        if (left.instance_of?(IdentifierNode) and env[left.name][:class] == :VARIABLE) or left.instance_of?(ArrayLookupNode)
             if left.get_type(env) == right.get_type(env)
                 return true
             else

@@ -69,16 +69,16 @@ describe "parse" do
         expect(Parser.new.parse("void foo(void) { foo; }")).to eq make_foo_fn([], [IdentifierNode.new("foo")])
     end
     it "parses functions with a single array lookup" do
-        expect(Parser.new.parse("void foo(void) { foo[42]; }")).to eq make_foo_fn([], [ArrayLookup.new("foo", ConstantNode.new(:INT, 42))])
+        expect(Parser.new.parse("void foo(void) { foo[42]; }")).to eq make_foo_fn([], [ArrayLookupNode.new("foo", ConstantNode.new(:INT, 42))])
     end
     it "parses functions with a unary minus" do
-        expect(Parser.new.parse("void foo(void) { -42; }")).to eq make_foo_fn([], [UnaryMinus.new(ConstantNode.new(:INT, 42))])
+        expect(Parser.new.parse("void foo(void) { -42; }")).to eq make_foo_fn([], [UnaryMinusNode.new(ConstantNode.new(:INT, 42))])
     end
     it "parses functions with a unary minus" do
-        expect(Parser.new.parse("void foo(void) { 42--42; }")).to eq make_foo_fn([], [SubNode.new(ConstantNode.new(:INT, 42), UnaryMinus.new(ConstantNode.new(:INT, 42)))])
+        expect(Parser.new.parse("void foo(void) { 42--42; }")).to eq make_foo_fn([], [SubNode.new(ConstantNode.new(:INT, 42), UnaryMinusNode.new(ConstantNode.new(:INT, 42)))])
     end
     it "parses functions with a not expression" do
-        expect(Parser.new.parse("void foo(void) { !42; }")).to eq make_foo_fn([], [Not.new(ConstantNode.new(:INT, 42))])
+        expect(Parser.new.parse("void foo(void) { !42; }")).to eq make_foo_fn([], [NotNode.new(ConstantNode.new(:INT, 42))])
     end
     it "parses functions with AddNode" do
         expect(Parser.new.parse("void foo(void) { foo + bar; }")).to eq make_foo_fn([], [AddNode.new(IdentifierNode.new("foo"), IdentifierNode.new("bar"))])
