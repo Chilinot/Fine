@@ -211,6 +211,11 @@ class NotNode                       < Struct.new(:expr)
     def check_semantics env
         expr.check_semantics env
     end
+    def generate_ir ir, allocator
+        temp = allocator.new_temporary
+        ir << Not.new(temp, expr.generate_ir(ir, allocator))
+        temp
+    end
 end
 
 class BinaryOperator            < Struct.new(:left, :right)

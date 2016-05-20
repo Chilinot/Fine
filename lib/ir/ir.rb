@@ -107,3 +107,4 @@ class ArrayElement < Struct.new(:name, :index); end
 class IntArrayElement < ArrayElement; end
 class CharArrayElement < ArrayElement; end
 
+class Not < Struct.new(:destination, :op); end
