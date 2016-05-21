@@ -11,6 +11,33 @@ class Temporary
     end
 end
 
+class Label
+    attr_reader :name, :index
+    def initialize name, index
+        @name = name
+        @index = index
+    end
+    def to_s
+        "#{name}#{index}:"
+    end
+    def == label
+        @index == label.index and @name == label.name
+    end
+end
+
+class Allocator
+    def initialize
+        @next_temporary = 0
+        @next_label = 0
+    end
+    def new_temporary
+        Temporary.new (@next_temporary += 1)
+    end
+    def new_label name
+        Label.new name, (@next_label += 1)
+    end
+end
+
 class Id
     attr_reader :name
     def initialize name
@@ -40,14 +67,6 @@ class Constant
     end
 end
 
-class TempAllocator
-    def initialize
-        @next = 0
-    end
-    def new_temporary
-        Temporary.new (@next += 1)
-    end
-end
 
 
 def generate_ir ast
@@ -56,6 +75,8 @@ end
 
 class Ir < Struct.new(:definitions)
 end
+
+class Eval < Struct.new(:destination, :expression); end
 
 class GlobalInt < Struct.new(:name)
 end
@@ -88,7 +109,7 @@ end
 class Return < Struct.new(:op)
 end
 
-class Binop < Struct.new(:destination, :op1, :op2); end
+class Binop < Struct.new(:op1, :op2); end
 
 class Add          < Binop; end
 class Sub          < Binop; end
@@ -107,6 +128,10 @@ class ArrayElement < Struct.new(:name, :index); end
 class IntArrayElement < ArrayElement; end
 class CharArrayElement < ArrayElement; end
 
-class Not < Struct.new(:destination, :op); end
+class Not < Struct.new(:op); end
+class Cast < Struct.new(:op, :from, :to); end
+class Store < Struct.new(:type, :destination, :source); end
+class Call < Struct.new(:name, :argument_list); end
 
-class Cast < Struct.new(:destination, :op, :from, :to); end
+class Jump < Struct.new(:label); end
+class Branch < Struct.new(:condition, :true_branch, :false_branch); end

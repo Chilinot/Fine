@@ -128,7 +128,7 @@ class FunctionDeclarationNode       < Struct.new(:type, :name, :formals, :body)
 
         ir_statments = []
         body.statments.each do |s|
-            s.generate_ir ir_statments, TempAllocator.new
+            s.generate_ir ir_statments, Allocator.new
         end
 
         ir << Function.new(name, type, ir_formals, ir_declarations, ir_statments)
@@ -206,8 +206,11 @@ class UnaryMinusNode                < Struct.new(:expr)
         expr.check_semantics env
     end
     def generate_ir ir, allocator
+        e = expr.generate_ir(ir, allocator)
+        binop = Sub.new(Constant.new(0), e)
+
         temp = allocator.new_temporary
-        ir << Sub.new(temp, Constant.new(0), expr.generate_ir(ir, allocator))
+        ir << Eval.new(temp, binop)
         temp
     end
 end
@@ -220,8 +223,9 @@ class NotNode                       < Struct.new(:expr)
         expr.check_semantics env
     end
     def generate_ir ir, allocator
+        not_expr = Not.new(expr.generate_ir(ir, allocator))
         temp = allocator.new_temporary
-        ir << Not.new(temp, expr.generate_ir(ir, allocator))
+        ir << Eval.new(temp, not_expr)
         temp
     end
 end
@@ -254,8 +258,12 @@ class BinaryOperator            < Struct.new(:left, :right)
                 AndNode          => And,
                 OrNode           => Or
         }
+        left_temp = left.generate_ir ir, allocator
+        right_temp = right.generate_ir ir, allocator
+        binop = ast_nodes[self.class].new(left_temp, right_temp)
+
         temp = allocator.new_temporary
-        ir << ast_nodes[self.class].new(temp, left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
+        ir << Eval.new(temp, binop)
         temp
     end
 end
@@ -290,9 +298,10 @@ class TypeCastNode                  < Struct.new(:type, :expr)
         if type == @expr_type # discard if same type
             return expr.generate_ir(ir, allocator)
         end
+        cast =  Cast.new(expr.generate_ir(ir, allocator), @expr_type, type)
 
         temp = allocator.new_temporary
-        ir << Cast.new(temp, expr.generate_ir(ir, allocator), @expr_type, type)
+        ir << Eval.new(temp, cast)
         temp
     end
 end
@@ -300,11 +309,13 @@ end
 class AssignNode                < BinaryOperator
     def check_semantics env
         if (left.instance_of?(IdentifierNode) and env[left.name][:class] == :VARIABLE) or left.instance_of?(ArrayLookupNode)
-            if left.get_type(env) == right.get_type(env)
+            @left_type = left.get_type env
+            @right_type = right.get_type env
+            if @left_type == @right_type
                 return true
             else
                 # error : type mismatch
-                raise SemanticError.new "can not assign #{type_to_s right.get_type(env)} to variable of type #{type_to_s left.get_type(env)}"
+                raise SemanticError.new "can not assign #{type_to_s @right_type} to variable of type #{type_to_s @left_type}"
             end
         end
 
@@ -314,6 +325,9 @@ class AssignNode                < BinaryOperator
         else
             raise SemanticError.new "can not assign to expression"
         end
+    end
+    def generate_ir ir, allocator
+        ir << Store.new(@left_type, left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
     end
 end
 
@@ -341,6 +355,16 @@ class CallNode              < Struct.new(:name, :args)
         end
 
         return true
+    end
+    def generate_ir ir, allocator
+        argument_list = args.map do |expr|
+            expr.generate_ir ir, allocator
+        end
+         call = Call.new(Id.new(name), argument_list)
+
+        temp = allocator.new_temporary
+        ir << Eval.new(temp, call)
+        temp
     end
 end
 
@@ -377,6 +401,24 @@ class WhileNode                     < Struct.new(:condition, :body)
         body.each { |stmt| stmt.check_semantics env }
         return true
     end
+    def generate_ir ir, allocator
+        while_start = allocator.new_label "while_start"
+        while_body = allocator.new_label "while_body"
+        while_end = allocator.new_label "while_end"
+
+        ir << Jump.new(while_start)
+        ir << while_start
+            cond = condition.generate_ir ir, allocator
+            ir << Branch.new(cond, while_body, while_end)
+        ir << while_body
+
+            body.each do |stmt|
+                stmt.generate_ir ir, allocator
+            end
+
+            ir << Jump.new(while_start)
+        ir << while_end
+    end
 end
 class IfNode                        < Struct.new(:condition, :then_block, :else_block)
     def check_semantics env
@@ -384,5 +426,36 @@ class IfNode                        < Struct.new(:condition, :then_block, :else_
         then_block.each { |stmt| stmt.check_semantics env }
         else_block.each { |stmt| stmt.check_semantics env } if else_block
         return true
+    end
+    def generate_ir ir, allocator
+        if_then = allocator.new_label "if_then"
+        if_else = allocator.new_label "if_else" if else_block
+        if_end = allocator.new_label "if_end"
+
+        # if condition
+        cond = condition.generate_ir ir, allocator
+        if else_block
+            ir << Branch.new(cond, if_then, if_else)
+        else
+            ir << Branch.new(cond, if_then, if_end)
+        end
+
+        # then block
+        ir << if_then
+        then_block.each do |stmt|
+            stmt.generate_ir ir, allocator
+        end
+        ir << Jump.new(if_end)
+
+        # else block
+        if else_block
+            ir << if_else
+            else_block.each do |stmt|
+                stmt.generate_ir ir, allocator
+            end
+            ir << Jump.new(if_end)
+        end
+
+        ir << if_end
     end
 end

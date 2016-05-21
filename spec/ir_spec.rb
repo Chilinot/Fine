@@ -79,7 +79,7 @@ describe "ir" do
     it "handles functions returning a 1 + 2" do
         expect(generate_ir (string_to_ast "int main(void) { return 1 + 2; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
             [
-                Add.new(Temporary.new(1), Constant.new(1), Constant.new(2)),
+                Eval.new(Temporary.new(1), Add.new(Constant.new(1), Constant.new(2))),
                 Return.new(Temporary.new(1))
             ]
         )]
@@ -87,9 +87,9 @@ describe "ir" do
     it "handles functions returning a 1 + 2 - 3" do
         expect(generate_ir (string_to_ast "int main(void) { return 1 + 2 - 3; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
             [
-                Add.new(Temporary.new(2), Constant.new(1), Constant.new(2)),
-                Sub.new(Temporary.new(1), Temporary.new(2), Constant.new(3)),
-                Return.new(Temporary.new(1))
+                Eval.new(Temporary.new(1), Add.new(Constant.new(1), Constant.new(2))),
+                Eval.new(Temporary.new(2), Sub.new(Temporary.new(1), Constant.new(3))),
+                Return.new(Temporary.new(2))
             ]
         )]
     end
@@ -111,7 +111,7 @@ describe "ir" do
         ast_nodes.each do |ast, ir|
             expect(generate_ir (string_to_ast "int main(void) { return 1 #{ast.new} 2; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
                 [
-                    ir.new(Temporary.new(1), Constant.new(1), Constant.new(2)),
+                    Eval.new(Temporary.new(1), ir.new(Constant.new(1), Constant.new(2))),
                     Return.new(Temporary.new(1))
                 ]
             )]
@@ -120,14 +120,13 @@ describe "ir" do
     it "handles more complex expressions" do
             expect(generate_ir (string_to_ast "int main(void) { return 42 + 2 != 42 - 2 * 33; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
                 [
-                    Add.new(Temporary.new(2), Constant.new(42), Constant.new(2)),
-                    Mul.new(Temporary.new(4), Constant.new(2), Constant.new(33)),
-                    Sub.new(Temporary.new(3), Constant.new(42), Temporary.new(4)),
-                    NotEqual.new(Temporary.new(1), Temporary.new(2), Temporary.new(3)),
-                    Return.new(Temporary.new(1))
+                    Eval.new(Temporary.new(1), Add.new(Constant.new(42), Constant.new(2))),
+                    Eval.new(Temporary.new(2), Mul.new(Constant.new(2), Constant.new(33))),
+                    Eval.new(Temporary.new(3), Sub.new(Constant.new(42), Temporary.new(2))),
+                    Eval.new(Temporary.new(4), NotEqual.new(Temporary.new(1), Temporary.new(3))),
+                    Return.new(Temporary.new(4))
                 ]
             )]
-
     end
     it "handles functions returning a global + local identifiers" do
         expect(generate_ir (string_to_ast "int foo; int main(void) { int bar; return foo + bar; }")).to eq Ir.new [
@@ -137,7 +136,7 @@ describe "ir" do
                 LocalInt.new("bar")
             ],
             [
-                Add.new(Temporary.new(1), Id.new("foo"), Id.new("bar")),
+                Eval.new(Temporary.new(1), Add.new(Id.new("foo"), Id.new("bar"))),
                 Return.new(Temporary.new(1))
             ])
         ]
@@ -156,9 +155,9 @@ describe "ir" do
             GlobalIntArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Div.new(Temporary.new(2), Constant.new(1), Constant.new(0)),
-                Add.new(Temporary.new(1), Temporary.new(2), Constant.new(10)),
-                Return.new(IntArrayElement.new("foo", Temporary.new(1)))
+                Eval.new(Temporary.new(1), Div.new(Constant.new(1), Constant.new(0))),
+                Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
+                Return.new(IntArrayElement.new("foo", Temporary.new(2)))
             ])
         ]
     end
@@ -167,7 +166,7 @@ describe "ir" do
             GlobalIntArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Sub.new(Temporary.new(1), Constant.new(0), IntArrayElement.new("foo", Constant.new(2))),
+                Eval.new(Temporary.new(1), Sub.new(Constant.new(0), IntArrayElement.new("foo", Constant.new(2)))),
                 Return.new(Temporary.new(1))
             ])
         ]
@@ -177,7 +176,7 @@ describe "ir" do
             GlobalIntArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Not.new(Temporary.new(1), IntArrayElement.new("foo", Constant.new(2))),
+                Eval.new(Temporary.new(1), Not.new(IntArrayElement.new("foo", Constant.new(2)))),
                 Return.new(Temporary.new(1))
             ])
         ]
@@ -187,8 +186,184 @@ describe "ir" do
             GlobalCharArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Cast.new(Temporary.new(1), CharArrayElement.new("foo", Constant.new(2)), :CHAR, :INT),
+                Eval.new(Temporary.new(1), Cast.new(CharArrayElement.new("foo", Constant.new(2)), :CHAR, :INT)),
                 Return.new(Temporary.new(1))
+            ])
+        ]
+    end
+    it "handles global variable assignment" do
+        expect(generate_ir (string_to_ast "int foo; int main(void) { foo = 42; return 0; }")).to eq Ir.new [
+            GlobalInt.new("foo"),
+            Function.new("main",:INT, [], [],
+            [
+                Store.new(:INT, Id.new("foo"), Constant.new(42)),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles global array assignment" do
+        expect(generate_ir (string_to_ast "int foo[42]; int main(void) { foo[4] = 42; return 0; }")).to eq Ir.new [
+            GlobalIntArray.new("foo", 42),
+            Function.new("main",:INT, [], [],
+            [
+                Store.new(:INT, IntArrayElement.new("foo", Constant.new(4)), Constant.new(42)),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "can assign expressions to global variables" do
+        expect(generate_ir (string_to_ast "int foo; int main(void) { foo = 20 + 10 + 10 + 2; return 0; }")).to eq Ir.new [
+            GlobalInt.new("foo"),
+            Function.new("main",:INT, [], [],
+            [
+                Eval.new(Temporary.new(1), Add.new(Constant.new(20), Constant.new(10))),
+                Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
+                Eval.new(Temporary.new(3), Add.new(Temporary.new(2), Constant.new(2))),
+                Store.new(:INT, Id.new("foo"), Temporary.new(3)),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+
+    it "handles function calls without arguments" do
+        expect(generate_ir (string_to_ast "int foo; int main(void) { foo = main(); return 0; }")).to eq Ir.new [
+            GlobalInt.new("foo"),
+            Function.new("main",:INT, [], [],
+            [
+                Eval.new(Temporary.new(1), Call.new(Id.new("main"), [])),
+                Store.new(:INT, Id.new("foo"), Temporary.new(1)),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles function call with single argument, returning a value" do
+        expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(42); return 0; }")).to eq Ir.new [
+            Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
+            [
+                Return.new(Id.new("value"))
+            ]),
+            Function.new("main",:INT, [], [],
+            [
+                Eval.new(Temporary.new(1), Call.new(Id.new("id"), [Constant.new(42)])),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles function call with single argument, returning a value" do
+        expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(20 + 10 + 10 + 2); return 0; }")).to eq Ir.new [
+            Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
+            [
+                Return.new(Id.new("value"))
+            ]),
+            Function.new("main",:INT, [], [],
+            [
+                Eval.new(Temporary.new(1), Add.new(Constant.new(20), Constant.new(10))),
+                Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
+                Eval.new(Temporary.new(3), Add.new(Temporary.new(2), Constant.new(2))),
+                Eval.new(Temporary.new(4), Call.new(Id.new("id"), [Temporary.new(3)])),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles while loops" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; while (i) { i = i - 1; } return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Jump.new(Label.new("while_start", 1)),
+                Label.new("while_start", 1),
+                    Branch.new(Id.new("i"), Label.new("while_body", 2), Label.new("while_end", 3)),
+
+                Label.new("while_body", 2),
+                    Eval.new(Temporary.new(1), Sub.new(Id.new("i"), Constant.new(1))),
+                    Store.new(:INT, Id.new("i"), Temporary.new(1)),
+                    Jump.new(Label.new("while_start", 1)),
+
+                Label.new("while_end", 3),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles while loops with complex condition" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; while (i * 42 + 3) { i = i - 1; } return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Jump.new(Label.new("while_start", 1)),
+                Label.new("while_start", 1),
+                    Eval.new(Temporary.new(1), Mul.new(Id.new("i"), Constant.new(42))),
+                    Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(3))),
+                    Branch.new(Temporary.new(2), Label.new("while_body", 2), Label.new("while_end", 3)),
+
+                Label.new("while_body", 2),
+                    Eval.new(Temporary.new(3), Sub.new(Id.new("i"), Constant.new(1))),
+                    Store.new(:INT, Id.new("i"), Temporary.new(3)),
+                    Jump.new(Label.new("while_start", 1)),
+
+                Label.new("while_end", 3),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles if statments" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; if (i) { 42; }  return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Branch.new(Id.new("i"), Label.new("if_then", 1), Label.new("if_end", 2)),
+                Label.new("if_then", 1),
+                    # Constant.new(42),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 2)),
+                Label.new("if_end", 2),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles if else statments" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; if (i) { 42; } else { i; }  return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Branch.new(Id.new("i"), Label.new("if_then", 1), Label.new("if_else", 2)),
+                Label.new("if_then", 1),
+                    # Constant.new(42),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_else", 2),
+                    # Id.new("i"),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_end", 3),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
+    it "handles else if statments" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; if (i) { 42; } else if (42) { i; } else { 7; }  return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Branch.new(Id.new("i"), Label.new("if_then", 1), Label.new("if_else", 2)),
+                Label.new("if_then", 1),
+                    # Constant.new(42),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_else", 2),
+
+                    Branch.new(Constant.new(42), Label.new("if_then", 4), Label.new("if_else", 5)),
+                    Label.new("if_then", 4),
+                        # Constant.new(42),  # Don't emit ir for stupid code!
+                        Jump.new(Label.new("if_end", 6)),
+                    Label.new("if_else", 5),
+                        # Id.new("i"),  # Don't emit ir for stupid code!
+                        Jump.new(Label.new("if_end", 6)),
+                    Label.new("if_end", 6),
+                    # Id.new("i"),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_end", 3),
+                Return.new(Constant.new(0))
             ])
         ]
     end
