@@ -136,7 +136,7 @@ describe "ir" do
                 LocalInt.new("bar")
             ],
             [
-                Eval.new(Temporary.new(1), Add.new(Id.new("foo"), Id.new("bar"))),
+                Eval.new(Temporary.new(1), Add.new(Id.new("foo", true), Id.new("bar", false))),
                 Return.new(Temporary.new(1))
             ])
         ]
@@ -196,7 +196,7 @@ describe "ir" do
             GlobalInt.new("foo"),
             Function.new("main",:INT, [], [],
             [
-                Store.new(:INT, Id.new("foo"), Constant.new(42)),
+                Store.new(:INT, Id.new("foo", true), Constant.new(42)),
                 Return.new(Constant.new(0))
             ])
         ]
@@ -219,7 +219,7 @@ describe "ir" do
                 Eval.new(Temporary.new(1), Add.new(Constant.new(20), Constant.new(10))),
                 Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
                 Eval.new(Temporary.new(3), Add.new(Temporary.new(2), Constant.new(2))),
-                Store.new(:INT, Id.new("foo"), Temporary.new(3)),
+                Store.new(:INT, Id.new("foo", true), Temporary.new(3)),
                 Return.new(Constant.new(0))
             ])
         ]
@@ -230,8 +230,8 @@ describe "ir" do
             GlobalInt.new("foo"),
             Function.new("main",:INT, [], [],
             [
-                Eval.new(Temporary.new(1), Call.new(Id.new("main"), [])),
-                Store.new(:INT, Id.new("foo"), Temporary.new(1)),
+                Eval.new(Temporary.new(1), Call.new(Id.new("main", true), [])),
+                Store.new(:INT, Id.new("foo", true), Temporary.new(1)),
                 Return.new(Constant.new(0))
             ])
         ]
@@ -240,11 +240,11 @@ describe "ir" do
         expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(42); return 0; }")).to eq Ir.new [
             Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
             [
-                Return.new(Id.new("value"))
+                Return.new(Id.new("value", false))
             ]),
             Function.new("main",:INT, [], [],
             [
-                Eval.new(Temporary.new(1), Call.new(Id.new("id"), [Constant.new(42)])),
+                Eval.new(Temporary.new(1), Call.new(Id.new("id", true), [Constant.new(42)])),
                 Return.new(Constant.new(0))
             ])
         ]
@@ -253,14 +253,14 @@ describe "ir" do
         expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(20 + 10 + 10 + 2); return 0; }")).to eq Ir.new [
             Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
             [
-                Return.new(Id.new("value"))
+                Return.new(Id.new("value", false))
             ]),
             Function.new("main",:INT, [], [],
             [
                 Eval.new(Temporary.new(1), Add.new(Constant.new(20), Constant.new(10))),
                 Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
                 Eval.new(Temporary.new(3), Add.new(Temporary.new(2), Constant.new(2))),
-                Eval.new(Temporary.new(4), Call.new(Id.new("id"), [Temporary.new(3)])),
+                Eval.new(Temporary.new(4), Call.new(Id.new("id", true), [Temporary.new(3)])),
                 Return.new(Constant.new(0))
             ])
         ]
@@ -273,11 +273,11 @@ describe "ir" do
             ],[
                 Jump.new(Label.new("while_start", 1)),
                 Label.new("while_start", 1),
-                    Branch.new(Id.new("i"), Label.new("while_body", 2), Label.new("while_end", 3)),
+                    Branch.new(Id.new("i", false), Label.new("while_body", 2), Label.new("while_end", 3)),
 
                 Label.new("while_body", 2),
-                    Eval.new(Temporary.new(1), Sub.new(Id.new("i"), Constant.new(1))),
-                    Store.new(:INT, Id.new("i"), Temporary.new(1)),
+                    Eval.new(Temporary.new(1), Sub.new(Id.new("i", false), Constant.new(1))),
+                    Store.new(:INT, Id.new("i", false), Temporary.new(1)),
                     Jump.new(Label.new("while_start", 1)),
 
                 Label.new("while_end", 3),
@@ -293,13 +293,13 @@ describe "ir" do
             ],[
                 Jump.new(Label.new("while_start", 1)),
                 Label.new("while_start", 1),
-                    Eval.new(Temporary.new(1), Mul.new(Id.new("i"), Constant.new(42))),
+                    Eval.new(Temporary.new(1), Mul.new(Id.new("i", false), Constant.new(42))),
                     Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(3))),
                     Branch.new(Temporary.new(2), Label.new("while_body", 2), Label.new("while_end", 3)),
 
                 Label.new("while_body", 2),
-                    Eval.new(Temporary.new(3), Sub.new(Id.new("i"), Constant.new(1))),
-                    Store.new(:INT, Id.new("i"), Temporary.new(3)),
+                    Eval.new(Temporary.new(3), Sub.new(Id.new("i", false), Constant.new(1))),
+                    Store.new(:INT, Id.new("i", false), Temporary.new(3)),
                     Jump.new(Label.new("while_start", 1)),
 
                 Label.new("while_end", 3),
@@ -313,7 +313,7 @@ describe "ir" do
             [
                 LocalInt.new("i")
             ],[
-                Branch.new(Id.new("i"), Label.new("if_then", 1), Label.new("if_end", 2)),
+                Branch.new(Id.new("i", false), Label.new("if_then", 1), Label.new("if_end", 2)),
                 Label.new("if_then", 1),
                     # Constant.new(42),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 2)),
@@ -328,12 +328,12 @@ describe "ir" do
             [
                 LocalInt.new("i")
             ],[
-                Branch.new(Id.new("i"), Label.new("if_then", 1), Label.new("if_else", 2)),
+                Branch.new(Id.new("i", false), Label.new("if_then", 1), Label.new("if_else", 2)),
                 Label.new("if_then", 1),
                     # Constant.new(42),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 3)),
                 Label.new("if_else", 2),
-                    # Id.new("i"),  # Don't emit ir for stupid code!
+                    # Id.new("i", false),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 3)),
                 Label.new("if_end", 3),
                 Return.new(Constant.new(0))
@@ -346,7 +346,7 @@ describe "ir" do
             [
                 LocalInt.new("i")
             ],[
-                Branch.new(Id.new("i"), Label.new("if_then", 1), Label.new("if_else", 2)),
+                Branch.new(Id.new("i", false), Label.new("if_then", 1), Label.new("if_else", 2)),
                 Label.new("if_then", 1),
                     # Constant.new(42),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 3)),
@@ -357,10 +357,10 @@ describe "ir" do
                         # Constant.new(42),  # Don't emit ir for stupid code!
                         Jump.new(Label.new("if_end", 6)),
                     Label.new("if_else", 5),
-                        # Id.new("i"),  # Don't emit ir for stupid code!
+                        # Id.new("i", false),  # Don't emit ir for stupid code!
                         Jump.new(Label.new("if_end", 6)),
                     Label.new("if_end", 6),
-                    # Id.new("i"),  # Don't emit ir for stupid code!
+                    # Id.new("i", false),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 3)),
                 Label.new("if_end", 3),
                 Return.new(Constant.new(0))
