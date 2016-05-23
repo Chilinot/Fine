@@ -1,6 +1,6 @@
 require_relative "semantic/error.rb"
 
-class ProgramNode                   < Struct.new(:nodes)
+class ProgramNode < Struct.new(:nodes)
     def check_semantics env
         nodes.each do |node|
             node.check_semantics env
@@ -19,7 +19,7 @@ class ProgramNode                   < Struct.new(:nodes)
     end
 end
 
-class VariableDeclarationNode            < Struct.new(:type, :name)
+class VariableDeclarationNode < Struct.new(:type, :name)
     def get_type env
         type
     end
@@ -44,7 +44,7 @@ class VariableDeclarationNode            < Struct.new(:type, :name)
         end
     end
 end
-class ArrayDeclarationNode          < Struct.new(:type, :name, :num_elements)
+class ArrayDeclarationNode < Struct.new(:type, :name, :num_elements)
     def get_type env
         "#{type}_ARRAY".to_sym
     end
@@ -84,7 +84,7 @@ class ExternFunctionDeclarationNode < Struct.new(:type, :name, :formals)
     end
 end
 
-class FunctionDeclarationNode       < Struct.new(:type, :name, :formals, :body)
+class FunctionDeclarationNode < Struct.new(:type, :name, :formals, :body)
     def check_semantics env
         if env.defined? name
             if env[name][:class] != :FUNCTION
@@ -135,7 +135,7 @@ class FunctionDeclarationNode       < Struct.new(:type, :name, :formals, :body)
     end
 end
 
-class FunctionBodyNode              < Struct.new(:declarations, :statments)
+class FunctionBodyNode < Struct.new(:declarations, :statments)
     def check_semantics env
         declarations.each do |decl|
             decl.check_semantics env
@@ -148,7 +148,7 @@ class FunctionBodyNode              < Struct.new(:declarations, :statments)
     end
 end
 
-class ConstantNode                  < Struct.new(:type, :value)
+class ConstantNode < Struct.new(:type, :value)
     def get_type env
         type
     end
@@ -160,7 +160,7 @@ class ConstantNode                  < Struct.new(:type, :value)
     end
 end
 
-class IdentifierNode                < Struct.new(:name)
+class IdentifierNode < Struct.new(:name)
     def get_type env
         if [:ARRAY, :FUNCTION].include? env[name][:class]
             "#{env[name][:type]}_#{env[name][:class]}".to_sym
@@ -176,7 +176,7 @@ class IdentifierNode                < Struct.new(:name)
     end
 end
 
-class ArrayLookupNode               < Struct.new(:name, :expr)
+class ArrayLookupNode < Struct.new(:name, :expr)
     def get_type env
         @type = env[name][:type]
         check_semantics env
@@ -198,7 +198,7 @@ class ArrayLookupNode               < Struct.new(:name, :expr)
     end
 end
 
-class UnaryMinusNode                < Struct.new(:expr)
+class UnaryMinusNode < Struct.new(:expr)
     def get_type env
         expr.get_type env
     end
@@ -215,7 +215,7 @@ class UnaryMinusNode                < Struct.new(:expr)
     end
 end
 
-class NotNode                       < Struct.new(:expr)
+class NotNode < Struct.new(:expr)
     def get_type env
         expr.get_type env
     end
@@ -230,7 +230,7 @@ class NotNode                       < Struct.new(:expr)
     end
 end
 
-class BinaryOperator            < Struct.new(:left, :right)
+class BinaryOperator < Struct.new(:left, :right)
     def get_type env
         right_type = right.get_type(env)
         if left.get_type(env) == right_type
@@ -282,7 +282,7 @@ class EqualNode                 < BinaryOperator; def to_s; "==" end end
 class AndNode                   < BinaryOperator; def to_s; "&&" end end
 class OrNode                    < BinaryOperator; def to_s; "||" end end
 
-class TypeCastNode                  < Struct.new(:type, :expr)
+class TypeCastNode < Struct.new(:type, :expr)
     def get_type env
          @expr_type = expr.get_type(env)
         if [:INT, :CHAR].include? @expr_type
@@ -331,7 +331,7 @@ class AssignNode                < BinaryOperator
     end
 end
 
-class CallNode              < Struct.new(:name, :args)
+class CallNode < Struct.new(:name, :args)
     def get_type env
         info = env.lookup name
         check_semantics env
@@ -368,7 +368,7 @@ class CallNode              < Struct.new(:name, :args)
     end
 end
 
-class ReturnNode                    < Struct.new(:expr)
+class ReturnNode < Struct.new(:expr)
     def get_type env
         if expr != :VOID
             return expr.get_type env
@@ -395,7 +395,7 @@ class ReturnNode                    < Struct.new(:expr)
         end
     end
 end
-class WhileNode                     < Struct.new(:condition, :body)
+class WhileNode < Struct.new(:condition, :body)
     def check_semantics env
         condition.check_semantics env
         body.each { |stmt| stmt.check_semantics env }
@@ -420,7 +420,7 @@ class WhileNode                     < Struct.new(:condition, :body)
         ir << while_end
     end
 end
-class IfNode                        < Struct.new(:condition, :then_block, :else_block)
+class IfNode < Struct.new(:condition, :then_block, :else_block)
     def check_semantics env
         condition.check_semantics env
         then_block.each { |stmt| stmt.check_semantics env }
