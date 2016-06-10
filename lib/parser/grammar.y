@@ -117,8 +117,8 @@ rule
          | expr "-" expr                                    { result = SubNode.new(val[0], val[2]) }
          | expr "*" expr                                    { result = MulNode.new(val[0], val[2]) }
          | expr "/" expr                                    { result = DivNode.new(val[0], val[2]) }
-         | expr "<" expr                                    { result = LessThanNode.new(val[0], val[2]) }
-         | expr ">" expr                                    { result = GreaterThanNode.new(val[0], val[2]) }
+         | expr "<" expr                                    { result = LessThenNode.new(val[0], val[2]) }
+         | expr ">" expr                                    { result = GreaterThenNode.new(val[0], val[2]) }
          | expr "<=" expr                                   { result = LessEqualNode.new(val[0], val[2]) }
          | expr ">=" expr                                   { result = GreaterEqualNode.new(val[0], val[2]) }
          | expr "!=" expr                                   { result = NotEqualNode.new(val[0], val[2]) }

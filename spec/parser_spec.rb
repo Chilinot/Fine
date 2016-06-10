@@ -92,11 +92,11 @@ describe "parse" do
     it "parses functions with DivNode" do
         expect(Parser.new.parse("void foo(void) { foo / bar; }")).to eq make_foo_fn([], [DivNode.new(IdentifierNode.new("foo"), IdentifierNode.new("bar"))])
     end
-    it "parses functions with LessThanNode" do
-        expect(Parser.new.parse("void foo(void) { foo < bar; }")).to eq make_foo_fn([], [LessThanNode.new(IdentifierNode.new("foo"), IdentifierNode.new("bar"))])
+    it "parses functions with LessThenNode" do
+        expect(Parser.new.parse("void foo(void) { foo < bar; }")).to eq make_foo_fn([], [LessThenNode.new(IdentifierNode.new("foo"), IdentifierNode.new("bar"))])
     end
-    it "parses functions with GreaterThanNode" do
-        expect(Parser.new.parse("void foo(void) { foo > bar; }")).to eq make_foo_fn([], [GreaterThanNode.new(IdentifierNode.new("foo"), IdentifierNode.new("bar"))])
+    it "parses functions with GreaterThenNode" do
+        expect(Parser.new.parse("void foo(void) { foo > bar; }")).to eq make_foo_fn([], [GreaterThenNode.new(IdentifierNode.new("foo"), IdentifierNode.new("bar"))])
     end
     it "parses functions with LessEqualNode" do
         expect(Parser.new.parse("void foo(void) { foo <= bar; }")).to eq make_foo_fn([], [LessEqualNode.new(IdentifierNode.new("foo"), IdentifierNode.new("bar"))])

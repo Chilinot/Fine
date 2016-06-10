@@ -249,8 +249,8 @@ class BinaryOperator < Struct.new(:left, :right)
                 SubNode          => Sub,
                 MulNode          => Mul,
                 DivNode          => Div,
-                LessThanNode     => LessThan,
-                GreaterThanNode  => GreaterThan,
+                LessThenNode     => LessThen,
+                GreaterThenNode  => GreaterThen,
                 LessEqualNode    => LessEqual,
                 GreaterEqualNode => GreaterEqual,
                 NotEqualNode     => NotEqual,
@@ -273,8 +273,8 @@ class AddNode                   < AritmeticOperator; def to_s; "+" end end
 class SubNode                   < AritmeticOperator; def to_s; "-" end end
 class MulNode                   < AritmeticOperator; def to_s; "*" end end
 class DivNode                   < AritmeticOperator; def to_s; "/" end end
-class LessThanNode              < BinaryOperator; def to_s; "<" end end
-class GreaterThanNode           < BinaryOperator; def to_s; ">" end end
+class LessThenNode              < BinaryOperator; def to_s; "<" end end
+class GreaterThenNode           < BinaryOperator; def to_s; ">" end end
 class LessEqualNode             < BinaryOperator; def to_s; "<=" end end
 class GreaterEqualNode          < BinaryOperator; def to_s; ">=" end end
 class NotEqualNode              < BinaryOperator; def to_s; "!=" end end

@@ -146,8 +146,8 @@ class Add          < Binop; end
 class Sub          < Binop; end
 class Mul          < Binop; end
 class Div          < Binop; end
-class LessThan     < Binop; end
-class GreaterThan  < Binop; end
+class LessThen     < Binop; end
+class GreaterThen  < Binop; end
 class LessEqual    < Binop; end
 class GreaterEqual < Binop; end
 class NotEqual     < Binop; end
