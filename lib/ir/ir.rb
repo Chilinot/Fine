@@ -103,6 +103,7 @@ class Function < Struct.new(:name, :type, :formals, :declarations, :instructions
     def to_s
         formal_list = ""
         formals.each do |f|
+            formal_list += ", " unless formal_list.empty?
             formal_list += "#{f[:type]} #{f[:name]}"
         end
         header = "def #{type} #{name}(#{formal_list}) {\n"
