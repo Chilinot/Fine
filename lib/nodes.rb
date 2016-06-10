@@ -49,7 +49,7 @@ class ArrayDeclarationNode < Struct.new(:type, :name, :num_elements)
         "#{type}_ARRAY".to_sym
     end
     def check_semantics env
-        env[name] =  {:class => :ARRAY, :type => type }
+        env[name] =  {:class => :ARRAY, :type => type, :num_elements => num_elements}
         return true
     end
     def generate_ir ir, global = false
@@ -183,15 +183,16 @@ class ArrayLookupNode < Struct.new(:name, :expr)
         @type
     end
     def check_semantics env
+        @num_elements = env[name][:num_elements]
         raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
     end
     def generate_ir ir, allocator
         case @type
         when :INT
-            IntArrayElement.new(name, expr.generate_ir(ir, allocator))
+            IntArrayElement.new(name, @num_elements, expr.generate_ir(ir, allocator))
         when :CHAR
-            CharArrayElement.new(name, expr.generate_ir(ir, allocator))
+            CharArrayElement.new(name, @num_elements, expr.generate_ir(ir, allocator))
         else
             raise "unable to generate ir array of type #{type}"
         end

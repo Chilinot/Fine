@@ -156,7 +156,7 @@ class And          < Binop; end
 class Or           < Binop; end
 
 
-class ArrayElement < Struct.new(:name, :index)
+class ArrayElement < Struct.new(:name, :num_elements, :index)
     def fix_globals locals
         global = locals.include? name
     end
