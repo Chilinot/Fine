@@ -367,4 +367,21 @@ describe "ir" do
             ])
         ]
     end
+    it "handles if statments with non-trivial condition" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; if (i < 10 + 1) { 42; }  return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Eval.new(Temporary.new(1), Add.new(Constant.new(10), Constant.new(1))),
+                Eval.new(Temporary.new(2), LessThen.new(Id.new("i", false), Temporary.new(1))),
+                Branch.new(Temporary.new(2), Label.new("if_then", 1), Label.new("if_end", 2)),
+                Label.new("if_then", 1),
+                    # Constant.new(42),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 2)),
+                Label.new("if_end", 2),
+                Return.new(Constant.new(0))
+            ])
+        ]
+    end
 end
