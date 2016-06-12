@@ -1,8 +1,6 @@
 require_relative "../lib/parser/parser.rb"
 require_relative "../lib/semantic/semantic_analysis.rb"
 require_relative "../lib/ir/ir.rb"
-# require_relative "../lib/utils.rb"
-
 
 describe "ir" do
     def string_to_ast string, show_ast = false
@@ -53,7 +51,7 @@ describe "ir" do
                                                                                                                 {:type => :INT, :name => "b"}],[],[]) ]
     end
     it "handles functions with explicit empty return" do
-        expect(generate_ir (string_to_ast "void main(void) { return; }")).to eq Ir.new [ Function.new("main",:VOID, [],[],[Return.new(:VOID)]) ]
+        expect(generate_ir (string_to_ast "void main(void) { return; }")).to eq Ir.new [ Function.new("main",:VOID, [],[],[Return.new(:void, :VOID)]) ]
     end
     it "handles functions with local char" do
         expect(generate_ir (string_to_ast "void main(void) { int foo; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalInt.new("foo")],[]) ]
@@ -71,16 +69,16 @@ describe "ir" do
         expect(generate_ir (string_to_ast "void main(void) { char foo[22]; }")).to eq Ir.new [ Function.new("main",:VOID, [],[LocalCharArray.new("foo",22)],[]) ]
     end
     it "handles functions returning a int constant" do
-        expect(generate_ir (string_to_ast "int main(void) { return 42; }")).to eq Ir.new [ Function.new("main",:INT, [],[],[Return.new(Constant.new(42))]) ]
+        expect(generate_ir (string_to_ast "int main(void) { return 42; }")).to eq Ir.new [ Function.new("main",:INT, [],[],[Return.new(:i32, Constant.new(42))]) ]
     end
     it "handles functions returning a char constant" do
-        expect(generate_ir (string_to_ast "char main(void) { return 'a'; }")).to eq Ir.new [ Function.new("main",:CHAR, [],[],[Return.new(Constant.new(97))]) ]
+        expect(generate_ir (string_to_ast "char main(void) { return 'a'; }")).to eq Ir.new [ Function.new("main",:CHAR, [],[],[Return.new(:i8, Constant.new(97))]) ]
     end
     it "handles functions returning a 1 + 2" do
         expect(generate_ir (string_to_ast "int main(void) { return 1 + 2; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
             [
                 Eval.new(Temporary.new(1), Add.new(Constant.new(1), Constant.new(2))),
-                Return.new(Temporary.new(1))
+                Return.new(:i32, Temporary.new(1))
             ]
         )]
     end
@@ -89,7 +87,7 @@ describe "ir" do
             [
                 Eval.new(Temporary.new(1), Add.new(Constant.new(1), Constant.new(2))),
                 Eval.new(Temporary.new(2), Sub.new(Temporary.new(1), Constant.new(3))),
-                Return.new(Temporary.new(2))
+                Return.new(:i32, Temporary.new(2))
             ]
         )]
     end
@@ -112,7 +110,7 @@ describe "ir" do
             expect(generate_ir (string_to_ast "int main(void) { return 1 #{ast.new} 2; }")).to eq Ir.new [ Function.new("main",:INT, [],[],
                 [
                     Eval.new(Temporary.new(1), ir.new(Constant.new(1), Constant.new(2))),
-                    Return.new(Temporary.new(1))
+                    Return.new(:i32, Temporary.new(1))
                 ]
             )]
         end
@@ -124,7 +122,7 @@ describe "ir" do
                     Eval.new(Temporary.new(2), Mul.new(Constant.new(2), Constant.new(33))),
                     Eval.new(Temporary.new(3), Sub.new(Constant.new(42), Temporary.new(2))),
                     Eval.new(Temporary.new(4), NotEqual.new(Temporary.new(1), Temporary.new(3))),
-                    Return.new(Temporary.new(4))
+                    Return.new(:i32, Temporary.new(4))
                 ]
             )]
     end
@@ -137,7 +135,7 @@ describe "ir" do
             ],
             [
                 Eval.new(Temporary.new(1), Add.new(Id.new("foo", true), Id.new("bar", false))),
-                Return.new(Temporary.new(1))
+                Return.new(:i32, Temporary.new(1))
             ])
         ]
     end
@@ -146,7 +144,7 @@ describe "ir" do
             GlobalIntArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Return.new(IntArrayElement.new("foo", 4, Constant.new(2)))
+                Return.new(:i32, IntArrayElement.new("foo", 4, Constant.new(2)))
             ])
         ]
     end
@@ -157,7 +155,7 @@ describe "ir" do
             [
                 Eval.new(Temporary.new(1), Div.new(Constant.new(1), Constant.new(0))),
                 Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
-                Return.new(IntArrayElement.new("foo", 4, Temporary.new(2)))
+                Return.new(:i32, IntArrayElement.new("foo", 4, Temporary.new(2)))
             ])
         ]
     end
@@ -167,7 +165,7 @@ describe "ir" do
             Function.new("main",:INT, [], [],
             [
                 Eval.new(Temporary.new(1), Sub.new(Constant.new(0), IntArrayElement.new("foo", 4, Constant.new(2)))),
-                Return.new(Temporary.new(1))
+                Return.new(:i32, Temporary.new(1))
             ])
         ]
     end
@@ -177,7 +175,7 @@ describe "ir" do
             Function.new("main",:INT, [], [],
             [
                 Eval.new(Temporary.new(1), Not.new(IntArrayElement.new("foo", 4, Constant.new(2)))),
-                Return.new(Temporary.new(1))
+                Return.new(:i32, Temporary.new(1))
             ])
         ]
     end
@@ -187,7 +185,7 @@ describe "ir" do
             Function.new("main",:INT, [], [],
             [
                 Eval.new(Temporary.new(1), Cast.new(CharArrayElement.new("foo", 4, Constant.new(2)), :CHAR, :INT)),
-                Return.new(Temporary.new(1))
+                Return.new(:i32, Temporary.new(1))
             ])
         ]
     end
@@ -197,7 +195,7 @@ describe "ir" do
             Function.new("main",:INT, [], [],
             [
                 Store.new(:INT, Id.new("foo", true), Constant.new(42)),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -207,7 +205,7 @@ describe "ir" do
             Function.new("main",:INT, [], [],
             [
                 Store.new(:INT, IntArrayElement.new("foo", 42, Constant.new(4)), Constant.new(42)),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -220,7 +218,7 @@ describe "ir" do
                 Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
                 Eval.new(Temporary.new(3), Add.new(Temporary.new(2), Constant.new(2))),
                 Store.new(:INT, Id.new("foo", true), Temporary.new(3)),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -232,7 +230,7 @@ describe "ir" do
             [
                 Eval.new(Temporary.new(1), Call.new(Id.new("main", true), [])),
                 Store.new(:INT, Id.new("foo", true), Temporary.new(1)),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -240,12 +238,12 @@ describe "ir" do
         expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(42); return 0; }")).to eq Ir.new [
             Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
             [
-                Return.new(Id.new("value", false))
+                Return.new(:i32, Id.new("value", false))
             ]),
             Function.new("main",:INT, [], [],
             [
                 Eval.new(Temporary.new(1), Call.new(Id.new("id", true), [Constant.new(42)])),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -253,7 +251,7 @@ describe "ir" do
         expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(20 + 10 + 10 + 2); return 0; }")).to eq Ir.new [
             Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
             [
-                Return.new(Id.new("value", false))
+                Return.new(:i32, Id.new("value", false))
             ]),
             Function.new("main",:INT, [], [],
             [
@@ -261,7 +259,7 @@ describe "ir" do
                 Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
                 Eval.new(Temporary.new(3), Add.new(Temporary.new(2), Constant.new(2))),
                 Eval.new(Temporary.new(4), Call.new(Id.new("id", true), [Temporary.new(3)])),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -281,7 +279,7 @@ describe "ir" do
                     Jump.new(Label.new("while_start", 1)),
 
                 Label.new("while_end", 3),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -303,7 +301,7 @@ describe "ir" do
                     Jump.new(Label.new("while_start", 1)),
 
                 Label.new("while_end", 3),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -318,7 +316,7 @@ describe "ir" do
                     # Constant.new(42),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 2)),
                 Label.new("if_end", 2),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -336,7 +334,7 @@ describe "ir" do
                     # Id.new("i", false),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 3)),
                 Label.new("if_end", 3),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -363,7 +361,7 @@ describe "ir" do
                     # Id.new("i", false),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 3)),
                 Label.new("if_end", 3),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end
@@ -380,7 +378,7 @@ describe "ir" do
                     # Constant.new(42),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 2)),
                 Label.new("if_end", 2),
-                Return.new(Constant.new(0))
+                Return.new(:i32, Constant.new(0))
             ])
         ]
     end

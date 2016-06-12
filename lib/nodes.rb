@@ -378,6 +378,7 @@ class ReturnNode < Struct.new(:expr)
     end
     def check_semantics env
         return_type = env.current_return_type
+        @type = return_type
 
         if return_type == :VOID and expr != :VOID
             raise SemanticError.new "attempt to return value from procedure"
@@ -390,9 +391,9 @@ class ReturnNode < Struct.new(:expr)
     end
     def generate_ir ir, temp_allocator
         if expr == :VOID
-            ir << Return.new(:VOID)
+            ir << Return.new(llvm_type(@type), :VOID)
         else
-            ir << Return.new(expr.generate_ir(ir, temp_allocator))
+            ir << Return.new(llvm_type(@type), expr.generate_ir(ir, temp_allocator))
         end
     end
 end

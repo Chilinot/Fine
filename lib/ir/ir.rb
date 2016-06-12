@@ -1,14 +1,14 @@
 
 class Temporary < Struct.new(:index)
     def fix_globals locals; end
-    def to_s
+    def generate_llvm
         "%#{index}"
     end
 end
 
 class Label < Struct.new(:name, :index)
     def fix_globals locals; end
-    def to_s
+    def generate_llvm
         "#{name}#{index}:"
     end
 end
@@ -30,7 +30,7 @@ class Id < Struct.new(:name, :global)
     def fix_globals locals
         self.global = !locals.include?(name)
     end
-    def to_s
+    def generate_llvm
         if global
             "@#{name}"
         else
@@ -41,8 +41,8 @@ end
 
 class Constant < Struct.new(:value)
     def fix_globals locals; end
-    def to_s
-        value.to_s
+    def generate_llvm
+        "#{value}"
     end
 end
 
@@ -59,16 +59,16 @@ def generate_ir ast
             i.fix_globals locals + formals
         end
     end
-    puts ir.to_s
     ir
 end
 
 class Ir < Struct.new(:definitions)
-    def to_s
-        string = ""
+    def generate_llvm
+        code = ""
         definitions.each do |d|
-            string << definitions.to_s
+            code << d.generate_llvm
         end
+        code
     end
 end
 
@@ -77,58 +77,62 @@ class Eval < Struct.new(:destination, :expression);
         destination.fix_globals locals
         expression.fix_globals locals
     end
-    def to_s
-        "#{destination} = #{expression}"
+    def generate_llvm
+        "#{destination.generate_llvm} = #{expression.generate_llvm}"
     end
 end
 
 class GlobalVariable < Struct.new(:name); end
-class GlobalInt < GlobalVariable; def to_s; "global i32 #{name}" end end
-class GlobalChar < GlobalVariable; def to_s; "global i8 #{name}" end end
+class GlobalInt < GlobalVariable; def generate_llvm; "@#{name} = global i32 zeroinitializer" end end
+class GlobalChar < GlobalVariable; def generate_llvm; "@#{name} = global i8 zeroinitializer" end end
 
 class LocalVariable < Struct.new(:name); end
-class LocalInt < LocalVariable; def to_s; "local i32 #{name}" end end
-class LocalChar < LocalVariable; def to_s; "local i8 #{name}" end end
+class LocalInt < LocalVariable; def generate_llvm; "%#{name} = alloca i32" end end
+class LocalChar < LocalVariable; def generate_llvm; "%#{name} = alloca i8" end end
 
 class GlobalArray < Struct.new(:name, :size); end
-class GlobalIntArray < GlobalArray; def to_s; "global [i32 * #{size}] #{name}" end end
-class GlobalCharArray < GlobalArray; def to_s; "global [i8 * #{size}] #{name}" end end
+class GlobalIntArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i32] zeroinitializer" end end
+class GlobalCharArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i8] zeroinitializer" end end
 
 class LocalArray < Struct.new(:name, :size); end
-class LocalIntArray < LocalArray; def to_s; "local [i8 * #{size}] #{name}" end end
-class LocalCharArray < LocalArray; def to_s; "local [i8 * #{size}] #{name}" end end
+class LocalIntArray < LocalArray; def generate_llvm; "local [#{size} x i32] #{name}" end end
+class LocalCharArray < LocalArray; def generate_llvm; "local [#{size} x i8] #{name}" end end
 
 
 class Function < Struct.new(:name, :type, :formals, :declarations, :instructions)
-    def to_s
+    def generate_llvm
         formal_list = ""
         formals.each do |f|
             formal_list += ", " unless formal_list.empty?
-            formal_list += "#{f[:type]} #{f[:name]}"
+            formal_list += "#{llvm_type(f[:type])} #{f[:name]}"
         end
-        header = "def #{type} #{name}(#{formal_list}) {\n"
+        header = "define #{llvm_type(type)} @#{name}(#{formal_list}) {\n"
 
         declaration_list = ""
         declarations.each do |d|
-            declaration_list += "  " + d.to_s + "\n"
+            declaration_list += "  " + d.generate_llvm + "\n"
         end
 
         instruction_list = ""
         instructions.each do |i|
             extra_indent = "  " unless i.instance_of? Label
-            instruction_list += "  #{extra_indent}" + i.to_s + "\n"
+            instruction_list += "  #{extra_indent}" + i.generate_llvm + "\n"
         end
 
         header + declaration_list + instruction_list + "}"
     end
 end
 
-class Return < Struct.new(:op)
+class Return < Struct.new(:type, :op)
     def fix_globals locals
         op.fix_globals locals unless op == :VOID
     end
-    def to_s
-        "ret #{op}"
+    def generate_llvm
+        unless op == :VOID
+            "ret #{type} #{op.generate_llvm}"
+        else
+            "ret #{type}"
+        end
     end
 end
 
@@ -137,8 +141,8 @@ class Binop < Struct.new(:op1, :op2)
         op1.fix_globals locals
         op2.fix_globals locals
     end
-    def to_s
-        "#{self.class.to_s.downcase} #{op1} #{op2}"
+    def generate_llvm
+        "#{self.class.to_s.downcase} #{op1.generate_llvm} #{op2.generate_llvm}"
     end
 end
 
@@ -160,8 +164,8 @@ class ArrayElement < Struct.new(:name, :num_elements, :index)
     def fix_globals locals
         global = locals.include? name
     end
-    def to_s
-        "#{name}[#{index}]"
+    def generate_llvm
+        "#{name}[#{index.generate_llvm}]"
     end
 end
 class IntArrayElement < ArrayElement; end
@@ -171,16 +175,16 @@ class Not < Struct.new(:op)
     def fix_globals locals
         op.fix_globals locals
     end
-    def to_s
-        "not #{op}"
+    def generate_llvm
+        "not #{op.generate_llvm}"
     end
 end
 class Cast < Struct.new(:op, :from, :to)
     def fix_globals locals
         op.fix_globals locals
     end
-    def to_s
-        "cast #{to} #{op}"
+    def generate_llvm
+        "cast #{to} #{op.generate_llvm}"
     end
 end
 class Store < Struct.new(:type, :destination, :source);
@@ -188,30 +192,30 @@ class Store < Struct.new(:type, :destination, :source);
         destination.fix_globals locals
         source.fix_globals locals
     end
-    def to_s
-        "store #{type} #{destination} #{source}"
+    def generate_llvm
+        "store #{type} #{destination.generate_llvm} #{source.generate_llvm}"
     end
 end
 class Call < Struct.new(:name, :argument_list)
     def fix_globals locals;
          name.fix_globals locals
     end
-    def to_s
-        "call #{name} #{argument_list.map { |a| a.to_s }.join(" ")}"
+    def generate_llvm
+        "call #{name.generate_llvm} #{argument_list.map { |a| a.generate_llvm }.join(" ")}"
     end
 end
 
 class Jump < Struct.new(:label)
     def fix_globals locals; end
-    def to_s
-        "jump #{label}"
+    def generate_llvm
+        "jump #{label.generate_llvm}"
     end
 end
 class Branch < Struct.new(:condition, :true_branch, :false_branch)
     def fix_globals locals
         condition.fix_globals locals
     end
-    def to_s
-        "br #{condition} #{true_branch} #{false_branch}"
+    def generate_llvm
+        "br #{condition.generate_llvm} #{true_branch.generate_llvm} #{false_branch.generate_llvm}"
     end
 end
