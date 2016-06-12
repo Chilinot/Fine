@@ -146,7 +146,7 @@ describe "ir" do
             GlobalIntArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Return.new(IntArrayElement.new("foo", Constant.new(2)))
+                Return.new(IntArrayElement.new("foo", 4, Constant.new(2)))
             ])
         ]
     end
@@ -157,7 +157,7 @@ describe "ir" do
             [
                 Eval.new(Temporary.new(1), Div.new(Constant.new(1), Constant.new(0))),
                 Eval.new(Temporary.new(2), Add.new(Temporary.new(1), Constant.new(10))),
-                Return.new(IntArrayElement.new("foo", Temporary.new(2)))
+                Return.new(IntArrayElement.new("foo", 4, Temporary.new(2)))
             ])
         ]
     end
@@ -166,7 +166,7 @@ describe "ir" do
             GlobalIntArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Eval.new(Temporary.new(1), Sub.new(Constant.new(0), IntArrayElement.new("foo", Constant.new(2)))),
+                Eval.new(Temporary.new(1), Sub.new(Constant.new(0), IntArrayElement.new("foo", 4, Constant.new(2)))),
                 Return.new(Temporary.new(1))
             ])
         ]
@@ -176,7 +176,7 @@ describe "ir" do
             GlobalIntArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Eval.new(Temporary.new(1), Not.new(IntArrayElement.new("foo", Constant.new(2)))),
+                Eval.new(Temporary.new(1), Not.new(IntArrayElement.new("foo", 4, Constant.new(2)))),
                 Return.new(Temporary.new(1))
             ])
         ]
@@ -186,7 +186,7 @@ describe "ir" do
             GlobalCharArray.new("foo", 4),
             Function.new("main",:INT, [], [],
             [
-                Eval.new(Temporary.new(1), Cast.new(CharArrayElement.new("foo", Constant.new(2)), :CHAR, :INT)),
+                Eval.new(Temporary.new(1), Cast.new(CharArrayElement.new("foo", 4, Constant.new(2)), :CHAR, :INT)),
                 Return.new(Temporary.new(1))
             ])
         ]
@@ -206,7 +206,7 @@ describe "ir" do
             GlobalIntArray.new("foo", 42),
             Function.new("main",:INT, [], [],
             [
-                Store.new(:INT, IntArrayElement.new("foo", Constant.new(4)), Constant.new(42)),
+                Store.new(:INT, IntArrayElement.new("foo", 42, Constant.new(4)), Constant.new(42)),
                 Return.new(Constant.new(0))
             ])
         ]
