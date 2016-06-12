@@ -117,8 +117,9 @@ class FunctionDeclarationNode < Struct.new(:type, :name, :formals, :body)
     end
     def generate_ir ir
         ir_formals = []
+        allocator = Allocator.new
         formals.each do |f|
-            ir_formals << {:name => f.name, :type => f.get_type(:no_environment)}
+            ir_formals << FormalArgument.new(f.name, f.get_type(:no_environment), allocator.new_temporary)
         end
 
         ir_declarations = []
@@ -128,7 +129,7 @@ class FunctionDeclarationNode < Struct.new(:type, :name, :formals, :body)
 
         ir_statments = []
         body.statments.each do |s|
-            s.generate_ir ir_statments, Allocator.new
+            s.generate_ir ir_statments, allocator
         end
 
         ir << Function.new(name, type, ir_formals, ir_declarations, ir_statments)

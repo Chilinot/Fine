@@ -47,8 +47,10 @@ describe "ir" do
         expect(generate_ir (string_to_ast "void main(void) {}")).to eq Ir.new [ Function.new("main",:VOID, [],[],[]) ]
     end
     it "handles functions with formals" do
-        expect(generate_ir (string_to_ast "void f(int a, int b) {  }")).to eq Ir.new [ Function.new("f",:VOID, [{:type => :INT, :name => "a"},
-                                                                                                                {:type => :INT, :name => "b"}],[],[]) ]
+        expect(generate_ir (string_to_ast "void f(int a, int b) {  }")).to eq Ir.new [ Function.new("f",:VOID, [
+                                                                                                                FormalArgument.new("a", :INT, Temporary.new(1)),
+                                                                                                                FormalArgument.new("b", :INT,  Temporary.new(2))
+                                                                                                               ],[],[]) ]
     end
     it "handles functions with explicit empty return" do
         expect(generate_ir (string_to_ast "void main(void) { return; }")).to eq Ir.new [ Function.new("main",:VOID, [],[],[Return.new(:void, :VOID)]) ]
@@ -236,7 +238,7 @@ describe "ir" do
     end
     it "handles function call with single argument, returning a value" do
         expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(42); return 0; }")).to eq Ir.new [
-            Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
+            Function.new("id", :INT, [FormalArgument.new("value", :INT, Temporary.new(1))], [],
             [
                 Return.new(:i32, Id.new("value", false))
             ]),
@@ -247,9 +249,9 @@ describe "ir" do
             ])
         ]
     end
-    it "handles function call with single argument, returning a value" do
+    it "handles function call with complex expression, returning a value" do
         expect(generate_ir (string_to_ast "int id(int value) { return value; } int main(void) { id(20 + 10 + 10 + 2); return 0; }")).to eq Ir.new [
-            Function.new("id", :INT, [{:name => "value", :type => :INT}], [],
+            Function.new("id", :INT, [FormalArgument.new("value", :INT, Temporary.new(1))], [],
             [
                 Return.new(:i32, Id.new("value", false))
             ]),

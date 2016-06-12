@@ -83,30 +83,31 @@ class Eval < Struct.new(:destination, :expression);
 end
 
 class GlobalVariable < Struct.new(:name); end
-class GlobalInt < GlobalVariable; def generate_llvm; "@#{name} = global i32 zeroinitializer" end end
-class GlobalChar < GlobalVariable; def generate_llvm; "@#{name} = global i8 zeroinitializer" end end
+class GlobalInt < GlobalVariable; def generate_llvm; "@#{name} = global i32 zeroinitializer\n" end end
+class GlobalChar < GlobalVariable; def generate_llvm; "@#{name} = global i8 zeroinitializer\n" end end
 
 class LocalVariable < Struct.new(:name); end
-class LocalInt < LocalVariable; def generate_llvm; "%#{name} = alloca i32" end end
-class LocalChar < LocalVariable; def generate_llvm; "%#{name} = alloca i8" end end
+class LocalInt < LocalVariable; def generate_llvm; "%#{name} = alloca i32\n" end end
+class LocalChar < LocalVariable; def generate_llvm; "%#{name} = alloca i8\n" end end
 
 class GlobalArray < Struct.new(:name, :size); end
-class GlobalIntArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i32] zeroinitializer" end end
-class GlobalCharArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i8] zeroinitializer" end end
+class GlobalIntArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i32] zeroinitializer\n" end end
+class GlobalCharArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i8] zeroinitializer\n" end end
 
 class LocalArray < Struct.new(:name, :size); end
-class LocalIntArray < LocalArray; def generate_llvm; "local [#{size} x i32] #{name}" end end
-class LocalCharArray < LocalArray; def generate_llvm; "local [#{size} x i8] #{name}" end end
+class LocalIntArray < LocalArray; def generate_llvm; "local [#{size} x i32] #{name}\n" end end
+class LocalCharArray < LocalArray; def generate_llvm; "local [#{size} x i8] #{name}\n" end end
 
+class FormalArgument < Struct.new(:name, :type, :temporary); end
 
 class Function < Struct.new(:name, :type, :formals, :declarations, :instructions)
     def generate_llvm
         formal_list = ""
         formals.each do |f|
             formal_list += ", " unless formal_list.empty?
-            formal_list += "#{llvm_type(f[:type])} #{f[:name]}"
+            formal_list += "#{llvm_type(f.type)} %#{f.name}"
         end
-        header = "define #{llvm_type(type)} @#{name}(#{formal_list}) {\n"
+        header = "\ndefine #{llvm_type(type)} @#{name}(#{formal_list}) {\n"
 
         declaration_list = ""
         declarations.each do |d|
