@@ -163,17 +163,21 @@ end
 
 class IdentifierNode < Struct.new(:name)
     def get_type env
+        @type = env[name][:type]
         if [:ARRAY, :FUNCTION].include? env[name][:class]
-            "#{env[name][:type]}_#{env[name][:class]}".to_sym
+            return "#{env[name][:type]}_#{env[name][:class]}".to_sym
         else
-            env[name][:type]
+            return env[name][:type]
         end
     end
     def check_semantics env
+        get_type env
         env.defined? name
     end
     def generate_ir ir, allocator
-        Id.new(name)
+        temp = allocator.new_temporary
+        ir << Eval.new(temp, Load.new(@type, Id.new(name)))
+        temp
     end
 end
 
@@ -189,14 +193,17 @@ class ArrayLookupNode < Struct.new(:name, :expr)
         return true
     end
     def generate_ir ir, allocator
+        index = expr.generate_ir(ir, allocator)
+        temp = allocator.new_temporary
         case @type
         when :INT
-            IntArrayElement.new(name, @num_elements, expr.generate_ir(ir, allocator))
+            ir << Eval.new(temp, IntArrayElement.new(name, @num_elements, index))
         when :CHAR
-            CharArrayElement.new(name, @num_elements, expr.generate_ir(ir, allocator))
+            ir << Eval.new(temp, CharArrayElement.new(name, @num_elements, index))
         else
             raise "unable to generate ir array of type #{type}"
         end
+        return temp
     end
 end
 
@@ -329,7 +336,11 @@ class AssignNode                < BinaryOperator
         end
     end
     def generate_ir ir, allocator
-        ir << Store.new(@left_type, left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
+        if left.instance_of? IdentifierNode
+            ir << Store.new(@left_type, Id.new(left.name), right.generate_ir(ir, allocator))
+        elsif left.instance_of? ArrayLookupNode
+            ir << Store.new(@left_type, left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
+        end
     end
 end
 

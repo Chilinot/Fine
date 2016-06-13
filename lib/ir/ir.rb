@@ -188,7 +188,17 @@ class Cast < Struct.new(:op, :from, :to)
         "cast #{to} #{op.generate_llvm}"
     end
 end
-class Store < Struct.new(:type, :destination, :source);
+
+class Load < Struct.new(:type, :source);
+    def fix_globals locals
+        source.fix_globals locals
+    end
+    def generate_llvm
+        "load #{type} #{source.generate_llvm}"
+    end
+end
+
+class Store < Struct.new(:type, :destination, :source)
     def fix_globals locals
         destination.fix_globals locals
         source.fix_globals locals
@@ -199,7 +209,7 @@ class Store < Struct.new(:type, :destination, :source);
 end
 class Call < Struct.new(:name, :argument_list)
     def fix_globals locals;
-         name.fix_globals locals
+        name.fix_globals locals
     end
     def generate_llvm
         "call #{name.generate_llvm} #{argument_list.map { |a| a.generate_llvm }.join(" ")}"
