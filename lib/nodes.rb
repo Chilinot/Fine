@@ -119,7 +119,7 @@ class FunctionDeclarationNode < Struct.new(:type, :name, :formals, :body)
         ir_formals = []
         allocator = Allocator.new
         formals.each do |f|
-            ir_formals << FormalArgument.new(f.name, f.get_type(:no_environment), allocator.new_temporary)
+            ir_formals << FormalArgument.new(f.name, llvm_type(f.get_type(:no_environment)), allocator.new_temporary)
         end
 
         ir_declarations = []
@@ -132,7 +132,7 @@ class FunctionDeclarationNode < Struct.new(:type, :name, :formals, :body)
             s.generate_ir ir_statments, allocator
         end
 
-        ir << Function.new(name, type, ir_formals, ir_declarations, ir_statments)
+        ir << Function.new(name, llvm_type(type), ir_formals, ir_declarations, ir_statments)
     end
 end
 
@@ -176,7 +176,7 @@ class IdentifierNode < Struct.new(:name)
     end
     def generate_ir ir, allocator
         temp = allocator.new_temporary
-        ir << Eval.new(temp, Load.new(@type, Id.new(name)))
+        ir << Eval.new(temp, Load.new(llvm_type(@type), Id.new(name)))
         temp
     end
 end
@@ -307,7 +307,7 @@ class TypeCastNode < Struct.new(:type, :expr)
         if type == @expr_type # discard if same type
             return expr.generate_ir(ir, allocator)
         end
-        cast =  Cast.new(expr.generate_ir(ir, allocator), @expr_type, type)
+        cast =  Cast.new(expr.generate_ir(ir, allocator), llvm_type(@expr_type), llvm_type(type))
 
         temp = allocator.new_temporary
         ir << Eval.new(temp, cast)
@@ -337,9 +337,9 @@ class AssignNode                < BinaryOperator
     end
     def generate_ir ir, allocator
         if left.instance_of? IdentifierNode
-            ir << Store.new(@left_type, Id.new(left.name), right.generate_ir(ir, allocator))
+            ir << Store.new(llvm_type(@left_type), Id.new(left.name), right.generate_ir(ir, allocator))
         elsif left.instance_of? ArrayLookupNode
-            ir << Store.new(@left_type, left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
+            ir << Store.new(llvm_type(@left_type), left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
         end
     end
 end
