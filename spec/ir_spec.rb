@@ -337,66 +337,69 @@ describe "ir" do
             ])
         ]
     end
-    # it "handles if else statments" do
-    #     expect(generate_ir (string_to_ast "int main(void) { int i; if (i) { 42; } else { i; }  return 0; }")).to eq Ir.new [
-    #         Function.new("main",:INT, [],
-    #         [
-    #             LocalInt.new("i")
-    #         ],[
-    #             Branch.new(Id.new("i", false), Label.new("if_then", 1), Label.new("if_else", 2)),
-    #             Label.new("if_then", 1),
-    #                 # Constant.new(42),  # Don't emit ir for stupid code!
-    #                 Jump.new(Label.new("if_end", 3)),
-    #             Label.new("if_else", 2),
-    #                 # Id.new("i", false),  # Don't emit ir for stupid code!
-    #                 Jump.new(Label.new("if_end", 3)),
-    #             Label.new("if_end", 3),
-    #             Return.new(:i32, Constant.new(0))
-    #         ])
-    #     ]
-    # end
-    # it "handles else if statments" do
-    #     expect(generate_ir (string_to_ast "int main(void) { int i; if (i) { 42; } else if (42) { i; } else { 7; }  return 0; }")).to eq Ir.new [
-    #         Function.new("main",:INT, [],
-    #         [
-    #             LocalInt.new("i")
-    #         ],[
-    #             Branch.new(Id.new("i", false), Label.new("if_then", 1), Label.new("if_else", 2)),
-    #             Label.new("if_then", 1),
-    #                 # Constant.new(42),  # Don't emit ir for stupid code!
-    #                 Jump.new(Label.new("if_end", 3)),
-    #             Label.new("if_else", 2),
+    it "handles if else statments" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; if (i) { 42; } else { i; }  return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Eval.new(Temporary.new(1), Load.new(:INT, Id.new("i", false))),
+                Branch.new(Temporary.new(1), Label.new("if_then", 1), Label.new("if_else", 2)),
+                Label.new("if_then", 1),
+                    # Constant.new(42),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_else", 2),
+                    Eval.new(Temporary.new(2), Load.new(:INT, Id.new("i", false))),  # Ok, emit stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_end", 3),
+                Return.new(:i32, Constant.new(0))
+            ])
+        ]
+    end
+    it "handles else if statments" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; if (i) { 42; } else if (42) { 32; } else { 7; }  return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Eval.new(Temporary.new(1), Load.new(:INT, Id.new("i", false))),
+                Branch.new(Temporary.new(1), Label.new("if_then", 1), Label.new("if_else", 2)),
+                Label.new("if_then", 1),
+                    # Constant.new(42),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_else", 2),
 
-    #                 Branch.new(Constant.new(42), Label.new("if_then", 4), Label.new("if_else", 5)),
-    #                 Label.new("if_then", 4),
-    #                     # Constant.new(42),  # Don't emit ir for stupid code!
-    #                     Jump.new(Label.new("if_end", 6)),
-    #                 Label.new("if_else", 5),
-    #                     # Id.new("i", false),  # Don't emit ir for stupid code!
-    #                     Jump.new(Label.new("if_end", 6)),
-    #                 Label.new("if_end", 6),
-    #                 # Id.new("i", false),  # Don't emit ir for stupid code!
-    #                 Jump.new(Label.new("if_end", 3)),
-    #             Label.new("if_end", 3),
-    #             Return.new(:i32, Constant.new(0))
-    #         ])
-    #     ]
-    # end
-    # it "handles if statments with non-trivial condition" do
-    #     expect(generate_ir (string_to_ast "int main(void) { int i; if (i < 10 + 1) { 42; }  return 0; }")).to eq Ir.new [
-    #         Function.new("main",:INT, [],
-    #         [
-    #             LocalInt.new("i")
-    #         ],[
-    #             Eval.new(Temporary.new(1), Add.new(Constant.new(10), Constant.new(1))),
-    #             Eval.new(Temporary.new(2), LessThen.new(Id.new("i", false), Temporary.new(1))),
-    #             Branch.new(Temporary.new(2), Label.new("if_then", 1), Label.new("if_end", 2)),
-    #             Label.new("if_then", 1),
-    #                 # Constant.new(42),  # Don't emit ir for stupid code!
-    #                 Jump.new(Label.new("if_end", 2)),
-    #             Label.new("if_end", 2),
-    #             Return.new(:i32, Constant.new(0))
-    #         ])
-    #     ]
-    # end
+                    Branch.new(Constant.new(42), Label.new("if_then", 4), Label.new("if_else", 5)),
+                    Label.new("if_then", 4),
+                        # Constant.new(42),  # Don't emit ir for stupid code!
+                        Jump.new(Label.new("if_end", 6)),
+                    Label.new("if_else", 5),
+                        # Id.new("i", false),  # Don't emit ir for stupid code!
+                        Jump.new(Label.new("if_end", 6)),
+                    Label.new("if_end", 6),
+                    # Id.new("i", false),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 3)),
+                Label.new("if_end", 3),
+                Return.new(:i32, Constant.new(0))
+            ])
+        ]
+    end
+    it "handles if statments with non-trivial condition" do
+        expect(generate_ir (string_to_ast "int main(void) { int i; if (i < 10 + 1) { 42; }  return 0; }")).to eq Ir.new [
+            Function.new("main",:INT, [],
+            [
+                LocalInt.new("i")
+            ],[
+                Eval.new(Temporary.new(1), Load.new(:INT, Id.new("i", false))),
+                Eval.new(Temporary.new(2), Add.new(Constant.new(10), Constant.new(1))),
+                Eval.new(Temporary.new(3), LessThen.new(Temporary.new(1), Temporary.new(2))),
+                Branch.new(Temporary.new(3), Label.new("if_then", 1), Label.new("if_end", 2)),
+                Label.new("if_then", 1),
+                    # Constant.new(42),  # Don't emit ir for stupid code!
+                    Jump.new(Label.new("if_end", 2)),
+                Label.new("if_end", 2),
+                Return.new(:i32, Constant.new(0))
+            ])
+        ]
+    end
 end
