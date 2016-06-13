@@ -30,14 +30,14 @@ define i32 @main() {
     ret i32 @foo
 }",
 #-------------------------------------------------------------------
-# "int foo; int main(void) { foo = 42; return foo; }" =>
-# "@foo = global i32 zeroinitializer
+"int foo; int main(void) { foo = 42; return foo; }" =>
+"@foo = global i32 zeroinitializer
 
-# define i32 @main() {
-#     store i32 42, i32 @foo
-#     %1 = load i32* @foo
-#     ret i32 %1
-# }"
+define i32 @main() {
+    store i32 42, i32 @foo
+    %1 = load i32* @foo
+    ret i32 %1
+}"
         }
         data.each do |uc, llvm|
             # expect(uc_to_llvm(uc)).to eq llvm
