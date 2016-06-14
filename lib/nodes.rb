@@ -192,6 +192,7 @@ class ArrayLookupNode < Struct.new(:name, :expr)
     def check_semantics env
         @type = env[name][:type]
         @num_elements = env[name][:num_elements]
+        expr.check_semantics env
         raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
     end
