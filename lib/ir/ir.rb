@@ -11,6 +11,9 @@ class Label < Struct.new(:name, :index)
     def generate_llvm formal_map = nil
         "#{name}#{index}:"
     end
+    def identifier
+        "%#{name}#{index}"
+    end
 end
 
 class Allocator
@@ -175,7 +178,11 @@ class Or           < Binop; end
 
 class ArrayElement < Struct.new(:type, :name, :num_elements, :index)
     def fix_globals locals
-        global = locals.include? name
+        # global = locals.include? name
+        @global = !locals.include?(name)
+    end
+    def identifier
+        "#{@global ? "@" : "%"}#{name}"
     end
     def generate_llvm formal_map = nil
         "getelementptr inbounds [#{num_elements} x #{type}]* #{identifier}, i32 0, i32 #{index.generate_llvm(formal_map)}"
