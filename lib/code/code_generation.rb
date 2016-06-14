@@ -5,7 +5,7 @@ def llvm_type type
         :CHAR => :i8,
         :VOID => :void
     }
-    raise "no llvm type for #{type}" unless map.include? type
+    raise "no llvm type for '#{type}'" unless map.include? type
 
     return map[type]
 end
