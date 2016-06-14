@@ -417,6 +417,7 @@ end
 class WhileNode < Struct.new(:condition, :body)
     def check_semantics env
         condition.check_semantics env
+        @type = condition.get_type env
         body.each { |stmt| stmt.check_semantics env }
         return true
     end
@@ -428,7 +429,9 @@ class WhileNode < Struct.new(:condition, :body)
         ir << Jump.new(while_start)
         ir << while_start
             cond = condition.generate_ir ir, allocator
-            ir << Branch.new(cond, while_body, while_end)
+            temp = allocator.new_temporary
+            ir << Eval.new(temp, Compare.new(llvm_type(@type), cond))
+            ir << Branch.new(temp, while_body, while_end)
         ir << while_body
 
             body.each do |stmt|
