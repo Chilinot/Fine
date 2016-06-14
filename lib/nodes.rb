@@ -445,6 +445,7 @@ end
 class IfNode < Struct.new(:condition, :then_block, :else_block)
     def check_semantics env
         condition.check_semantics env
+        @type = condition.get_type env
         then_block.each { |stmt| stmt.check_semantics env }
         else_block.each { |stmt| stmt.check_semantics env } if else_block
         return true
@@ -456,10 +457,12 @@ class IfNode < Struct.new(:condition, :then_block, :else_block)
 
         # if condition
         cond = condition.generate_ir ir, allocator
+        temp = allocator.new_temporary
+        ir << Eval.new(temp, Compare.new(llvm_type(@type), cond))
         if else_block
-            ir << Branch.new(cond, if_then, if_else)
+            ir << Branch.new(temp, if_then, if_else)
         else
-            ir << Branch.new(cond, if_then, if_end)
+            ir << Branch.new(temp, if_then, if_end)
         end
 
         # then block
