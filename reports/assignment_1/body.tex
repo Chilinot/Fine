@@ -1,0 +1,58 @@
+
+% The solution should contain a brief report on how you approached and
+% solved the assignment.
+
+% Explain how you arrived at your solution,
+% how you used any given code and how you used tools and standard libraries.
+
+% Describe different design decisions and explain them.
+% If any aspect of the assignment caused difficulties or required deliberation,
+% or if you discovered an unexpected way to solve a subproblem,
+% describe that too.
+
+%Also include any other information required by the specification for
+%that assignment.
+
+%In the report you should describe how you handle the following issues:
+
+%comments
+    % we tell lexer to match invalid comments and raise an error
+%end-of-file
+    % this is handled by rexial and so therefore this is not an issue for us
+%source code positions
+    % we currently only keep track of the current line in order to be able to
+    % generate somewhat useful error messages
+
+
+%\section{Introduction}
+\section{Lexical Analyser}
+% Explain how you arrived at your solution,
+% how you used any given code and how you used tools and standard libraries.
+\noindent
+The programming language we use is Ruby; which is a dynamic, object-oriented programming language with focus on simplicity and productivity. For our purposes, it has been lovely to work with.\\
+
+\noindent
+After researching the different options available; we decided to use Rexical, a lexical analyser generator for Ruby. Rexical is easy to use and was designed to work together with Racc. Racc is a parser generator for Ruby, which we'll use to implement our parser for $\mu$C later on.\\
+
+\noindent
+Rexical made it straightforward to implement the lexical analyser and we did not face any difficulties.\\
+
+\noindent
+We created rules that match invalid tokens in order to catch them and
+in order to detect errors we created rules that match invalid tokens.
+We currently only report the first lexical error found.\\
+
+\noindent
+Comments are ignored in the lexer, i.e. they are not sent to the parser. Anything inside a comment is completely omitted from the output. The only time comments are reported are when they are malformed. It is only the block comment (i.e. anything between "/*" and "*/") that has the possibility of being malformed. This happens if it is not properly terminated before the lexer reaches an "EOF" symbol.\\
+
+\noindent
+The only time we have to manually handle an "EOF" symbol (i.e. not handled by Rexical) in the lexer is in comments. Otherwise they are completely handled by the library.\\
+
+\noindent
+Currently we only keep track of source code positions to be able to generate somewhat useful error messages. They are not sent further down the line after the lexer.
+
+\section{Design Decisions}
+We have made the decision to enforce the user to use UTF-8 as file encoding for the source files in order to handle the source code correctly and in a well defined manner. If the user does not encode his/her files in UTF-8 an error will be thrown in the lexer as it attempts to read the file.
+
+\section{Conclusion}
+To conclude, this assignment has been rather easy to implement. In total there were close to zero problems encountered during this assignment; all thanks to Rexical.

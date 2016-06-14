@@ -1,0 +1,29 @@
+\textit{This brief report explains how we constructed the semantic analyzer for the $\mu$C programming language.}
+
+\section{Semantic Analysis}
+
+\subsection{Environment/Symbol table}
+The environment is represented as a stack of hash-maps in the analyzer. Using maps enables quick lookup's and store's in the current scope while the outer stack allows us to keep track of the scopes in an orderly fashion, popping and pushing new scopes as needed.
+
+Every time the analyzer enters a new scope it pushes a new map onto the stack and adds any declaration to this map. If it encounters a declaration that attempts to define an identifier that is already defined in the top most map (i.e the current scope) an error is thrown to indicate this. When it exits a scope it pops the top most map from the stack.
+
+During lookup the analyzer first looks at the top most map and then works its way down the stack until it finds a map where the identifier is defined or reaches the bottom of the stack. If the bottom is reached, an error is thrown to indicate that the given identifier was not defined in the environment. Otherwise it fetches the meta-data of the identifier from the environment and checks if it's properly used.
+
+The meta-data stored in the environment is currently the identifiers name, type, and class (i.e if it's a function, array, or variable). Function identifiers also store the formals of the function, including the type and class of those. As well as return type and whether or not the function is implemented, that is if the function-declaration was an external-declaration or a regular function-declaration. Regular declarations should be able to overwrite an external-declaration, but an external should not be able to overwrite any previous declaration. Storing whether or not the previous declaration was an implementation enables us to check if we should allow the re-declaration or not.
+
+\subsection{Operators}\label{operators}
+%Binary operators except the arithmetic operators, require that both sides of the operator are of the same type. Arithmetic operators such as $+$, $-$, $*$, and $/$ are not allowed for any other type than characters or integers. While the rest are allowed for all types. For example it is allowed to compare two arrays using any of the comparison operators, as that is interpreted as comparing if the two references the same memory location. But it is not allowed to use any of the arithmetic operators on the arrays, since pointers are currently not supported in the compiler.
+
+%Binary operators can be used for both characters and integers at the same time, e.g. you are allowed to add integers to characters and vice versa. In this case the semantic analyzer determines that the resulting type of the expression is an integer. In assignment, an implicit typecast to the type of the identifier is made, if the two types of the expression do not match each other.
+
+Binary operators require that both sides of  the expression are of the same type. If the developer wants to use a binary operator on expressions of different types an explicit typecast have to be made.
+
+\section{Design Decisions}
+The largest decision while implementing the analyzer was to perform the entire analysis in a single pass. Most modern compilers perform this step in multiple passes to allow for more dynamic type checking and declarations. Doing the entire analysis in a single step makes the construction and maintenance of the environment easier since we do not have to keep track of our current position in it. But it removes some features that we like in other languages. Such as being able to make a function call before the function is declared. A multi-pass analyzer would have found the declaration in an earlier pass and would thus be able to check if the function call was valid. But a single pass analyzer would not have found the declaration unless it was declared before the function call, using either an external- or a regular-declaration.
+
+The second design decision made was to allow arithmetic operators to be used on characters, not just on integers. This allows the programmer to write something like "'!' $+$ '\&'". This would make the program add the ASCII-values of the two integers together constructing a new character based on the resulting value. Which in this case would be the character 'G' (ASCII-value 71). This is also what ANSI-C would do.
+
+The third decision was the need for explicit typecasting as described in section \ref{operators}.
+
+\section{Conclusion}
+To conclude, this assignment has been one of the more interesting ones so far. Primarily because we have had to implement all of it by ourselves, instead of using generators as we did for the two previous assignments. We also have had to make some large choices such as whether or not to use a single or multi pass analyzer. We opted for the single pass for its simplicity and conformity with ANSI-C.

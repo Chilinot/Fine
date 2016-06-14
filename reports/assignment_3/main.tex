@@ -1,0 +1,51 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+%\usepackage{fullpage}
+\usepackage[british]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm} \newtheorem{theorem}{Theorem}
+\usepackage{color}
+\usepackage{float}
+\usepackage{listings}
+\lstset{ % setup code listings
+  language=Ruby,
+    frame=single,
+    basicstyle=\small,  % nothing smaller than \footnotesize, please
+      tabsize=2,
+    numbers=left,
+    framexleftmargin=2em,  % extend frame to include line numbers
+      % xrightmargin=2em,  % extra space to fit 79 characters
+      breaklines=true,
+    breakatwhitespace=true,
+    prebreak={/},
+    captionpos=b,
+    columns=fullflexible,
+    escapeinside={\#*}{\^^M},
+    mathescape
+}
+\usepackage{tikz} \usetikzlibrary{trees}
+\usepackage{hyperref}  % should always be the last package
+
+% Section style (removes the need to use \noindent)
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
+\title{\textbf{Compiler Design Project\\
+  Uppsala University -- Spring 2016 \\
+    Report for Assignment $3$}}
+
+\author{Tommy V\aa gbratt \and Lucas Arnstr\"om}
+
+%\date{Month Day, Year}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+
+\input{body}
+
+\end{document}

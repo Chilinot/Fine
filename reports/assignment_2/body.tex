@@ -1,0 +1,93 @@
+\textit{This brief report explains how we constructed our parser for the $\mu$C programming language.}
+
+\section{Parser}
+The parser is constructed using a parser-generator by the name of Racc. Racc is based on the Yacc parser-generator, but made using the Ruby language. It takes a grammar file and outputs a parser. The syntax of the grammar file is very similar to Yacc's syntax in how the rules and actions are defined. So even though the documentation for Racc was very sparse it proved to be rather simple to define the rules and respective actions using the documentation for Yacc and similar generators.
+
+The output of the generated parser is an abstract syntax tree (AST) with the following nodes:
+\begin{itemize}
+\item Program: The root node of the AST. Contains a list of top level declarations, such as functions and variables.
+\item VarDeclaration: Variable declaration. Contains the type and name of identifier.
+\item ArrayDeclaration: Array declaration. Contains the type, name, and number of elements.
+\item ExternFunctionDeclaration: External function declaration. Contains the function type, name, and formals.
+\item FunctionDeclaration: Same as ExternFunctionDeclaration with the addition of a FunctionBody-node.
+\item FunctionBody: Contains the declarations and statements of a function.
+\item Constant: Contains the type and value of a constant, such as integers and characters.
+\item Identifier: Contains the name of an identifier.
+\item ArrayLookup: Represents an array look-up containing the identifier of the array and the expression for the index.
+\item UnaryMinus: Represents a negative expression.
+\item Not: Represents a negation ("!").
+\item AddNode: Represents an addition and contains the left- and right-hand side expressions.
+\item SubNode: Similar to AddNode but for subtraction.
+\item MulNode: Similar to above.
+\item DivNode: Similar to above.
+\item LessThanNode: Similar to above.
+\item GreaterThanNode: Similar to above.
+\item LessEqualNode: Similar to above.
+\item GreaterEqualNode: Similar to above.
+\item NotEqualNode: Similar to above.
+\item EqualNode: Similar to above.
+\item AndNode: Similar to above.
+\item AssignNode: Similar to above.
+\item FunctionCall: Represents a function call, containing the name of the function and the arguments.
+\item Return: Represents a return statement, containing an expression.
+\item While: Represents a while statement, containing the condition and the block of statements to execute.
+\item If: Represents an if statement, containing the condition, a then-block and a possible else-block.
+\end{itemize}
+
+\begin{lstlisting}
+int main(void) {
+  int x;
+  int y;
+  x = 42;
+  x=y=4711;
+}
+\end{lstlisting}
+
+Parsing the simple program above results in the following AST:
+
+\begin{verbatim}
+<Program nodes=[
+        <FunctionDeclaration
+            type=:INT,
+            name="main",
+            formals=[],
+            body=
+                <FunctionBody
+                    declarations=[
+                        <VarDeclaration type=:INT, name="x">,
+                        <VarDeclaration type=:INT, name="y">
+                    ],
+                    statements=[
+                        <AssignNode
+                            left=<Identifier name="x">,
+                            right=<Constant type=:INT, value=42>
+                        >,
+                        <AssignNode
+                            left=<Identifier name="x">,
+                            right=<AssignNode
+                                left=<Identifier name="y">,
+                                right=<Constant type=:INT, value=47>
+                            >
+                        >
+                    ]
+                >
+        >
+    ]
+>
+\end{verbatim}
+
+The root node "Program" contains a list of nodes. In this case it only contains one node, a function declaration. The function declaration contains four things, the type, name, a list of formals which is empty in this case, and a body node.
+
+The body node contains two lists, one with all declarations, and another with all statements. The declaration list contains two variable declaration nodes representing the two integers x and y. The statements list contains two assignment nodes. The first assigns the integer constant 42 to the identifier "x". The second node contains a third assignment node that assigns the integer constant 4711 to the identifier "y", which is then assigned to the identifier "x".
+
+\section{Design Decisions}
+While implementing the parser for the $\mu$C programming language we had to make several design decisions.
+
+The biggest decision was to enforce curly brackets in if- and while-statements. This removes dangling else ambiguity in the grammar as well as remove the possibility of introducing bugs in a code base when using single line if- or while-statements.
+
+We are aware of that this is not correct according to the specification of $\mu$C, but we made the choice because the forced curly brackets are something we both prefer in other languages that also enforces them.
+
+The next big design decision was to remove the non-associativity of unary minus in favor of left-associated binary minus. Currently the grammar associates all minus tokens to the left. This change did not affect the construction of the parse-trees during our experimentation's, it actually helped remove ambiguity from the grammar. We don't know if this decision will cause problems further down the line, but it is an easy fix if that becomes the case.
+
+\section{Conclusion}
+So far everything has gone well. We have not had any major problems yet. Most have been easy to fix, mostly thanks to the simplicity and strength of the tools we have used so far. The next assignments are going to be the more interesting ones since we will no longer have any fancy tools like Rex or Racc to aid us.
