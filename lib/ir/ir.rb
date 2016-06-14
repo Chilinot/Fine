@@ -137,7 +137,7 @@ class Return < Struct.new(:type, :op)
     end
 end
 
-class Binop < Struct.new(:op1, :op2)
+class Binop < Struct.new(:type, :op1, :op2)
     def fix_globals locals
         op1.fix_globals locals
         op2.fix_globals locals

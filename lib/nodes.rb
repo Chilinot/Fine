@@ -254,6 +254,7 @@ class BinaryOperator < Struct.new(:left, :right)
     end
     def check_semantics env
         get_type env
+        @type = right.get_type env
         return true
     end
     def generate_ir ir, allocator
