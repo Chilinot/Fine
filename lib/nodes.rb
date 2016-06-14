@@ -195,10 +195,16 @@ class ArrayLookupNode < Struct.new(:name, :expr)
         raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
     end
-    def generate_ir ir, allocator
+    def generate_address_ir ir, allocator
         index = expr.generate_ir(ir, allocator)
         temp = allocator.new_temporary
         ir << Eval.new(temp, ArrayElement.new(llvm_type(@type), name, @num_elements, index))
+        return temp
+    end
+    def generate_ir ir, allocator
+        element_pointer = generate_address_ir ir, allocator
+        temp = allocator.new_temporary
+        ir << Eval.new(temp, Load.new(llvm_type(@type), element_pointer))
         return temp
     end
 end
@@ -337,7 +343,7 @@ class AssignNode                < BinaryOperator
         if left.instance_of? IdentifierNode
             ir << Store.new(llvm_type(@left_type), Id.new(left.name), right.generate_ir(ir, allocator))
         elsif left.instance_of? ArrayLookupNode
-            ir << Store.new(llvm_type(@left_type), left.generate_ir(ir, allocator), right.generate_ir(ir, allocator))
+            ir << Store.new(llvm_type(@left_type), left.generate_address_ir(ir, allocator), right.generate_ir(ir, allocator))
         end
     end
 end
