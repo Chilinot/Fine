@@ -1,4 +1,5 @@
 require_relative "semantic/error.rb"
+require_relative "code/code_generation.rb"
 
 class ProgramNode < Struct.new(:nodes)
     def check_semantics env
