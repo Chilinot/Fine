@@ -126,7 +126,7 @@ class Function < Struct.new(:name, :type, :formals, :declarations, :instructions
 
         declaration_list = ""
         declarations.each do |d|
-            declaration_list += "  " + d.generate_llvm + "\n"
+            declaration_list += d.generate_llvm
         end
 
         instruction_list = formal_allocation
