@@ -161,7 +161,7 @@ class And          < Binop; end
 class Or           < Binop; end
 
 
-class ArrayElement < Struct.new(:name, :num_elements, :index)
+class ArrayElement < Struct.new(:type, :name, :num_elements, :index)
     def fix_globals locals
         global = locals.include? name
     end
@@ -169,8 +169,6 @@ class ArrayElement < Struct.new(:name, :num_elements, :index)
         "#{name}[#{index.generate_llvm}]"
     end
 end
-class IntArrayElement < ArrayElement; end
-class CharArrayElement < ArrayElement; end
 
 class Not < Struct.new(:op)
     def fix_globals locals

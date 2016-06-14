@@ -188,6 +188,7 @@ class ArrayLookupNode < Struct.new(:name, :expr)
         @type
     end
     def check_semantics env
+        @type = env[name][:type]
         @num_elements = env[name][:num_elements]
         raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
@@ -195,14 +196,7 @@ class ArrayLookupNode < Struct.new(:name, :expr)
     def generate_ir ir, allocator
         index = expr.generate_ir(ir, allocator)
         temp = allocator.new_temporary
-        case @type
-        when :INT
-            ir << Eval.new(temp, IntArrayElement.new(name, @num_elements, index))
-        when :CHAR
-            ir << Eval.new(temp, CharArrayElement.new(name, @num_elements, index))
-        else
-            raise "unable to generate ir array of type #{type}"
-        end
+        ir << Eval.new(temp, ArrayElement.new(llvm_type(@type), name, @num_elements, index))
         return temp
     end
 end
