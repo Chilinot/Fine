@@ -155,10 +155,11 @@ class ConstantNode < Struct.new(:type, :value)
         type
     end
     def check_semantics env
+        get_type env
         return true
     end
     def generate_ir ir, _
-        Constant.new(value.ord)
+        Constant.new(llvm_type(type), value.ord)
     end
 end
 
@@ -211,7 +212,7 @@ class UnaryMinusNode < Struct.new(:expr)
     end
     def generate_ir ir, allocator
         e = expr.generate_ir(ir, allocator)
-        binop = Sub.new(Constant.new(0), e)
+        binop = Sub.new(:i32, Constant.new(:i32, 0), e)
 
         temp = allocator.new_temporary
         ir << Eval.new(temp, binop)
@@ -237,7 +238,9 @@ end
 class BinaryOperator < Struct.new(:left, :right)
     def get_type env
         right_type = right.get_type(env)
-        if left.get_type(env) == right_type
+        left_type = left.get_type(env)
+        if left_type and right_type and left_type == right_type
+            @type = right_type
             return right_type
         else
             raise SemanticError.new "#{type_to_s left.get_type(env)} #{self} #{type_to_s right.get_type(env)} is not defined"
@@ -264,7 +267,7 @@ class BinaryOperator < Struct.new(:left, :right)
         }
         left_temp = left.generate_ir ir, allocator
         right_temp = right.generate_ir ir, allocator
-        binop = ast_nodes[self.class].new(left_temp, right_temp)
+        binop = ast_nodes[self.class].new(llvm_type(@type), left_temp, right_temp)
 
         temp = allocator.new_temporary
         ir << Eval.new(temp, binop)

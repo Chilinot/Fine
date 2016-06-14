@@ -39,7 +39,7 @@ class Id < Struct.new(:name, :global)
     end
 end
 
-class Constant < Struct.new(:value)
+class Constant < Struct.new(:type, :value)
     def fix_globals locals; end
     def generate_llvm
         "#{value}"
