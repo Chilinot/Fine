@@ -7,3 +7,10 @@ coverage/
 # Scrap files
 *.swp
 *.orig
+
+# Ignore all files in reports directory.
+reports/*/*
+# But do not ignore these three files!
+!reports/*/main.tex
+!reports/*/body.tex
+!reports/*/Makefile
