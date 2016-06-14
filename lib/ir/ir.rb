@@ -88,20 +88,20 @@ class Eval < Struct.new(:destination, :expression);
 end
 
 class GlobalVariable < Struct.new(:name); end
-class GlobalInt < GlobalVariable; def generate_llvm; "@#{name} = global i32 zeroinitializer\n" end end
-class GlobalChar < GlobalVariable; def generate_llvm; "@#{name} = global i8 zeroinitializer\n" end end
+class GlobalInt < GlobalVariable; def generate_llvm formal_map = nil; "@#{name} = global i32 zeroinitializer\n" end end
+class GlobalChar < GlobalVariable; def generate_llvm formal_map = nil; "@#{name} = global i8 zeroinitializer\n" end end
 
 class LocalVariable < Struct.new(:name); end
-class LocalInt < LocalVariable; def generate_llvm; "%#{name} = alloca i32\n" end end
-class LocalChar < LocalVariable; def generate_llvm; "%#{name} = alloca i8\n" end end
+class LocalInt < LocalVariable; def generate_llvm formal_map = nil; "    %#{name} = alloca i32\n" end end
+class LocalChar < LocalVariable; def generate_llvm formal_map = nil; "   %#{name} = alloca i8\n" end end
 
 class GlobalArray < Struct.new(:name, :size); end
-class GlobalIntArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i32] zeroinitializer\n" end end
-class GlobalCharArray < GlobalArray; def generate_llvm; "@#{name} = global [#{size} x i8] zeroinitializer\n" end end
+class GlobalIntArray < GlobalArray; def generate_llvm formal_map = nil; "@#{name} = global [#{size} x i32] zeroinitializer\n" end end
+class GlobalCharArray < GlobalArray; def generate_llvm formal_map = nil; "@#{name} = global [#{size} x i8] zeroinitializer\n" end end
 
 class LocalArray < Struct.new(:name, :size); end
-class LocalIntArray < LocalArray; def generate_llvm; "local [#{size} x i32] #{name}\n" end end
-class LocalCharArray < LocalArray; def generate_llvm; "local [#{size} x i8] #{name}\n" end end
+class LocalIntArray < LocalArray; def generate_llvm formal_map = nil; "    %#{name} = alloca [#{size} x i32]\n" end end
+class LocalCharArray < LocalArray; def generate_llvm formal_map = nil; "    %#{name} = alloca [#{size} x i8]\n" end end
 
 class FormalArgument < Struct.new(:name, :type, :temporary)
     def generate_llvm formal_map = nil
