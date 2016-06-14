@@ -406,11 +406,11 @@ class ReturnNode < Struct.new(:expr)
         end
         return true
     end
-    def generate_ir ir, temp_allocator
+    def generate_ir ir, allocator
         if expr == :VOID
             ir << Return.new(llvm_type(@type), :VOID)
         else
-            ir << Return.new(llvm_type(@type), expr.generate_ir(ir, temp_allocator))
+            ir << Return.new(llvm_type(@type), expr.generate_ir(ir, allocator))
         end
     end
 end
