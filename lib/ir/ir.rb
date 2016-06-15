@@ -141,10 +141,10 @@ end
 
 class Return < Struct.new(:type, :op)
     def fix_globals locals
-        op.fix_globals locals unless op == :VOID
+        op.fix_globals locals unless type == :void
     end
     def generate_llvm formal_map = nil
-        unless op == :VOID
+        unless type == :void
             "ret #{type} #{op.generate_llvm(formal_map)}"
         else
             "ret #{type}"
@@ -203,12 +203,12 @@ class ArrayElement < Struct.new(:type, :name, :num_elements, :index)
     end
 end
 
-class Not < Struct.new(:op)
+class Not < Struct.new(:type, :op)
     def fix_globals locals
         op.fix_globals locals
     end
     def generate_llvm formal_map = nil
-        "not #{op.generate_llvm(formal_map)}"
+        "icmp eq #{type} #{op.generate_llvm(formal_map)}, 0"
     end
 end
 class Cast < Struct.new(:op, :from, :to)

@@ -132,6 +132,7 @@ class FunctionDeclarationNode < Struct.new(:type, :name, :formals, :body)
         body.statments.each do |s|
             s.generate_ir ir_statments, allocator
         end
+        ir_statments << Return.new(:void) if type == :VOID and ir_statments.last.class != Return
 
         ir << Function.new(name, llvm_type(type), ir_formals, ir_declarations, ir_statments)
     end
@@ -229,16 +230,21 @@ end
 
 class NotNode < Struct.new(:expr)
     def get_type env
-        expr.get_type env
+        @type = expr.get_type env
+        @type
     end
     def check_semantics env
+        get_type env
         expr.check_semantics env
     end
     def generate_ir ir, allocator
-        not_expr = Not.new(expr.generate_ir(ir, allocator))
-        temp = allocator.new_temporary
-        ir << Eval.new(temp, not_expr)
-        temp
+        not_expr = expr.generate_ir(ir, allocator)
+        not_temp = allocator.new_temporary
+        zero_extend_temp = allocator.new_temporary
+
+        ir << Eval.new(not_temp, Not.new(llvm_type(@type), not_expr))
+        ir << Eval.new(zero_extend_temp, ZeroExtend.new(not_temp, :i1, llvm_type(@type)))
+        zero_extend_temp
     end
 end
 
@@ -421,7 +427,11 @@ class CallNode < Struct.new(:name, :args)
          call = Call.new(llvm_type(@type), Id.new(name), argument_list)
 
         temp = allocator.new_temporary
-        ir << Eval.new(temp, call)
+        if @type != :VOID
+            ir << Eval.new(temp, call)
+        else
+            ir << call
+        end
         temp
     end
 end
@@ -448,7 +458,7 @@ class ReturnNode < Struct.new(:expr)
     end
     def generate_ir ir, allocator
         if expr == :VOID
-            ir << Return.new(llvm_type(@type), :VOID)
+            ir << Return.new(llvm_type(@type))
         else
             ir << Return.new(llvm_type(@type), expr.generate_ir(ir, allocator))
         end

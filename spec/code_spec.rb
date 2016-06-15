@@ -283,6 +283,49 @@ define i32 @main() {
     ret i32 %1
 }",
 #-------------------------------------------------------------------
+"int not(int n) { return !n; } int main(void) { return not(0); }" =>
+"
+define i32 @not(i32 %n) {
+    %1 = alloca i32
+    store i32 %n, i32* %1
+    %2 = load i32* %1
+    %3 = icmp eq i32 %2, 0
+    %4 = zext i1 %3 to i32
+    ret i32 %4
+}
+define i32 @main() {
+    %1 = call i32 @not (i32 0)
+    ret i32 %1
+}",
+#-------------------------------------------------------------------
+"void meh(int n) { !n; } int main(void) { meh(0); return 0; }" =>
+"
+define void @meh(i32 %n) {
+    %1 = alloca i32
+    store i32 %n, i32* %1
+    %2 = load i32* %1
+    %3 = icmp eq i32 %2, 0
+    %4 = zext i1 %3 to i32
+    ret void
+}
+define i32 @main() {
+    call void @meh (i32 0)
+    ret i32 0
+}",
+#-------------------------------------------------------------------
+"int negate(int n) { return -n; } int main(void) { return negate(1); }" =>
+"
+define i32 @negate(i32 %n) {
+    %1 = alloca i32
+    store i32 %n, i32* %1
+    %2 = load i32* %1
+    %3 = sub i32 0, %2
+    ret i32 %3
+}
+define i32 @main() {
+    %1 = call i32 @negate (i32 1)
+    ret i32 %1
+}",
         }
         data.each do |uc, llvm|
             expect(uc_to_llvm(uc)).to eq llvm

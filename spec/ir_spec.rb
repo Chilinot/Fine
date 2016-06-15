@@ -44,31 +44,31 @@ describe "ir" do
         expect(generate_ir (string_to_ast "void main(void);")).to eq Ir.new []
     end
     it "handles simple function declaration" do
-        expect(generate_ir (string_to_ast "void main(void) {}")).to eq Ir.new [ Function.new("main",:void, [],[],[]) ]
+        expect(generate_ir (string_to_ast "void main(void) {}")).to eq Ir.new [ Function.new("main",:void, [],[],[Return.new(:void)]) ]
     end
     it "handles functions with formals" do
         expect(generate_ir (string_to_ast "void f(int a, int b) {  }")).to eq Ir.new [ Function.new("f",:void, [
                                                                                                                 FormalArgument.new("a", :i32, Temporary.new(1)),
                                                                                                                 FormalArgument.new("b", :i32,  Temporary.new(2))
-                                                                                                               ],[],[]) ]
+                                                                                                               ],[],[Return.new(:void)]) ]
     end
     it "handles functions with explicit empty return" do
-        expect(generate_ir (string_to_ast "void main(void) { return; }")).to eq Ir.new [ Function.new("main",:void, [],[],[Return.new(:void, :VOID)]) ]
+        expect(generate_ir (string_to_ast "void main(void) { return; }")).to eq Ir.new [ Function.new("main",:void, [],[],[Return.new(:void)]) ]
     end
     it "handles functions with local char" do
-        expect(generate_ir (string_to_ast "void main(void) { int foo; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalInt.new("foo")],[]) ]
+        expect(generate_ir (string_to_ast "void main(void) { int foo; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalInt.new("foo")],[Return.new(:void)]) ]
     end
     it "handles functions with local int" do
-        expect(generate_ir (string_to_ast "void main(void) { char foo; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalChar.new("foo")],[]) ]
+        expect(generate_ir (string_to_ast "void main(void) { char foo; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalChar.new("foo")],[Return.new(:void)]) ]
     end
     it "handles functions with multiple local variables" do
-        expect(generate_ir (string_to_ast "void main(void) { int foo; char bar; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalInt.new("foo"), LocalChar.new("bar")],[]) ]
+        expect(generate_ir (string_to_ast "void main(void) { int foo; char bar; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalInt.new("foo"), LocalChar.new("bar")],[Return.new(:void)]) ]
     end
     it "handles functions with local int-array" do
-        expect(generate_ir (string_to_ast "void main(void) { int foo[42]; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalIntArray.new("foo", 42)],[]) ]
+        expect(generate_ir (string_to_ast "void main(void) { int foo[42]; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalIntArray.new("foo", 42)],[Return.new(:void)]) ]
     end
     it "handles functions with local char-array" do
-        expect(generate_ir (string_to_ast "void main(void) { char foo[22]; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalCharArray.new("foo",22)],[]) ]
+        expect(generate_ir (string_to_ast "void main(void) { char foo[22]; }")).to eq Ir.new [ Function.new("main",:void, [],[LocalCharArray.new("foo",22)],[Return.new(:void)]) ]
     end
     it "handles functions returning a int constant" do
         expect(generate_ir (string_to_ast "int main(void) { return 42; }")).to eq Ir.new [ Function.new("main",:i32, [],[],[Return.new(:i32, Constant.new(:i32, 42))]) ]
@@ -223,8 +223,9 @@ describe "ir" do
             [
                 Eval.new(Temporary.new(1), ArrayElement.new(:i32, "foo", 4, Constant.new(:i32, 2))),
                 Eval.new(Temporary.new(2), Load.new(:i32, Temporary.new(1))),
-                Eval.new(Temporary.new(3), Not.new(Temporary.new(2))),
-                Return.new(:i32, Temporary.new(3))
+                Eval.new(Temporary.new(3), Not.new(:i32, Temporary.new(2))),
+                Eval.new(Temporary.new(4), ZeroExtend.new(Temporary.new(3), :i1, :i32)),
+                Return.new(:i32, Temporary.new(4))
             ])
         ]
     end
