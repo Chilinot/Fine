@@ -154,14 +154,135 @@ define i32 @main() {
     ret i32 %3
 }",
 #-------------------------------------------------------------------
-"int main(void) { return 40 + 2; }" =>
+uc_operator_program("+") => llvm_operator_program("add"),
+uc_operator_program("-") => llvm_operator_program("sub"),
+uc_operator_program("*") => llvm_operator_program("mul"),
+uc_operator_program("/") => llvm_operator_program("div"),
+uc_operator_program("==") => llvm_boolean_program("eq"),
+uc_operator_program("!=") => llvm_boolean_program("ne"),
+uc_operator_program("<") => llvm_boolean_program("slt"),
+uc_operator_program(">") => llvm_boolean_program("sgt"),
+uc_operator_program("<=") => llvm_boolean_program("sle"),
+uc_operator_program(">=") => llvm_boolean_program("sge"),
+uc_operator_program("&&") =>
 "
 define i32 @main() {
-    %1 = add i32 40, 2
+    %1 = icmp ne i32 40, 0
+    %2 = icmp ne i32 2, 0
+    %3 = and i1 %1, %2
+    %4 = zext i1 %3 to i32
+    ret i32 %4
+}",
+uc_operator_program("||") =>
+"
+define i32 @main() {
+    %1 = or i32 40, 2
+    %2 = icmp ne i32 %1, 0
+    %3 = zext i1 %2 to i32
+    ret i32 %3
+}",
+#-------------------------------------------------------------------
+"int main(void) { return 1 < 2 && 4 > 5; }" =>
+"
+define i32 @main() {
+    %1 = icmp slt i32 1, 2
+    %2 = zext i1 %1 to i32
+    %3 = icmp sgt i32 4, 5
+    %4 = zext i1 %3 to i32
+    %5 = icmp ne i32 %2, 0
+    %6 = icmp ne i32 %4, 0
+    %7 = and i1 %5, %6
+    %8 = zext i1 %7 to i32
+    ret i32 %8
+}",
+#-------------------------------------------------------------------
+"int main(void) { return 1 < 2 && 4 > 5 || 42; }" =>
+"
+define i32 @main() {
+    %1 = icmp slt i32 1, 2
+    %2 = zext i1 %1 to i32
+    %3 = icmp sgt i32 4, 5
+    %4 = zext i1 %3 to i32
+    %5 = icmp ne i32 %2, 0
+    %6 = icmp ne i32 %4, 0
+    %7 = and i1 %5, %6
+    %8 = zext i1 %7 to i32
+    %9 = or i32 %8, 42
+    %10 = icmp ne i32 %9, 0
+    %11 = zext i1 %10 to i32
+    ret i32 %11
+}",
+#-------------------------------------------------------------------
+"int foo(void) { return 42; } int main(void) { return foo(); }" =>
+"
+define i32 @foo() {
+    ret i32 42
+}
+define i32 @main() {
+    %1 = call i32 @foo ()
     ret i32 %1
-}"
-
-
+}",
+#-------------------------------------------------------------------
+"int foo(int n) { return n; } int main(void) { return foo(42); }" =>
+"
+define i32 @foo(i32 %n) {
+    %1 = alloca i32
+    store i32 %n, i32* %1
+    %2 = load i32* %1
+    ret i32 %2
+}
+define i32 @main() {
+    %1 = call i32 @foo (i32 42)
+    ret i32 %1
+}",
+#-------------------------------------------------------------------
+"int foo(int n, char c) { return n + (int)c; } int main(void) { return foo(3, 'a'); }" =>
+"
+define i32 @foo(i32 %n, i8 %c) {
+    %1 = alloca i32
+    store i32 %n, i32* %1
+    %2 = alloca i8
+    store i8 %c, i8* %2
+    %3 = load i32* %1
+    %4 = load i8* %2
+    %5 = sext i8 %4 to i32
+    %6 = add i32 %3, %5
+    ret i32 %6
+}
+define i32 @main() {
+    %1 = call i32 @foo (i32 3, i8 97)
+    ret i32 %1
+}",
+#-------------------------------------------------------------------
+"int fib(int n) { if (n < 2) { return n; } return fib(n-1) + fib(n-2); } int main(void) { return fib(10); }" =>
+"
+define i32 @fib(i32 %n) {
+    %1 = alloca i32
+    store i32 %n, i32* %1
+    %2 = load i32* %1
+    %3 = icmp slt i32 %2, 2
+    %4 = zext i1 %3 to i32
+    %5 = icmp ne i32 %4, 0
+    br i1 %5, label %if_then1, label %if_end2
+  if_then1:
+    %6 = load i32* %1
+    ret i32 %6
+    br label %if_end2
+  if_end2:
+    %8 = load i32* %1
+    %9 = sub i32 %8, 1
+    %10 = call i32 @fib (i32 %9)
+    %11 = load i32* %1
+    %12 = sub i32 %11, 2
+    %13 = call i32 @fib (i32 %12)
+    %14 = add i32 %10, %13
+    ret i32 %14
+}
+define i32 @main() {
+    %1 = call i32 @fib (i32 10)
+    ret i32 %1
+}",
+#-------------------------------------------------------------------
         }
         data.each do |uc, llvm|
             expect(uc_to_llvm(uc)).to eq llvm
@@ -174,5 +295,19 @@ define i32 @main() {
             ir = generate_ir ast
             return generate_llvm ir
         end
+    end
+    def uc_operator_program(op)
+        "int main(void) { return 40 #{op} 2; }"
+    end
+    def llvm_operator_program(op)
+        "\ndefine i32 @main() {\n    %1 = #{op} i32 40, 2\n    ret i32 %1\n}"
+    end
+    def llvm_boolean_program(op)
+"
+define i32 @main() {
+    %1 = icmp #{op} i32 40, 2
+    %2 = zext i1 %1 to i32
+    ret i32 %2
+}"
     end
 end

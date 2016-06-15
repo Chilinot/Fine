@@ -158,7 +158,21 @@ class Binop < Struct.new(:type, :op1, :op2)
         op2.fix_globals locals
     end
     def generate_llvm formal_map = nil
-        "#{self.class.to_s.downcase} #{type} #{op1.generate_llvm(formal_map)}, #{op2.generate_llvm(formal_map)}"
+        class_to_instruction = {
+            Add         => "add",
+            Sub         => "sub",
+            Mul         => "mul",
+            Div         => "div",
+            LessThen    => "icmp slt",
+            GreaterThen => "icmp sgt",
+            LessEqual   => "icmp sle",
+            GreaterEqual=> "icmp sge",
+            NotEqual    => "icmp ne",
+            Equal       => "icmp eq",
+            And         => "and",
+            Or          => "or",
+        }
+        "#{class_to_instruction[self.class]} #{type} #{op1.generate_llvm(formal_map)}, #{op2.generate_llvm(formal_map)}"
     end
 end
 
@@ -202,7 +216,18 @@ class Cast < Struct.new(:op, :from, :to)
         op.fix_globals locals
     end
     def generate_llvm formal_map = nil
-        "cast #{to} #{op.generate_llvm(formal_map)}"
+        instruction = (llvm_type_size(from) < llvm_type_size(to)) ? "sext" : "trunc"
+        "#{instruction} #{from} #{op.generate_llvm(formal_map)} to #{to}"
+    end
+end
+
+class ZeroExtend < Struct.new(:op, :from, :to)
+    def fix_globals locals
+        op.fix_globals locals
+    end
+    def generate_llvm formal_map = nil
+        raise "unable to zero extend to smaller type" if (llvm_type_size(from) > llvm_type_size(to))
+        "zext #{from} #{op.generate_llvm(formal_map)} to #{to}"
     end
 end
 
@@ -224,12 +249,16 @@ class Store < Struct.new(:type, :destination, :source)
         "store #{type} #{source.generate_llvm(formal_map)}, #{type}* #{destination.generate_llvm(formal_map)}"
     end
 end
-class Call < Struct.new(:name, :argument_list)
+class Call < Struct.new(:type, :name, :argument_list)
     def fix_globals locals;
         name.fix_globals locals
     end
     def generate_llvm formal_map = nil
-        "call #{name.generate_llvm} #{argument_list.map { |a| a.generate_llvm(formal_map) }.join(" ")}"
+
+        arguments = argument_list.map do |a|
+            "#{a[:type]} #{a[:id].generate_llvm(formal_map)}"
+        end
+        "call #{type} #{name.generate_llvm} (#{arguments.join(", ")})"
     end
 end
 

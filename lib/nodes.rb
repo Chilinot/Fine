@@ -277,25 +277,60 @@ class BinaryOperator < Struct.new(:left, :right)
         right_temp = right.generate_ir ir, allocator
         binop = ast_nodes[self.class].new(llvm_type(@type), left_temp, right_temp)
 
+
+
+        if self.instance_of? OrNode
+
+            or_temp = allocator.new_temporary
+            compare_temp = allocator.new_temporary
+            cast_temp = allocator.new_temporary
+
+            ir << Eval.new(or_temp, Or.new(llvm_type(@type), left_temp, right_temp))
+            ir << Eval.new(compare_temp, Compare.new(llvm_type(@type), or_temp))
+            ir << Eval.new(cast_temp, ZeroExtend.new(compare_temp, :i1, llvm_type(@type)))
+            return cast_temp
+
+        elsif self.instance_of? AndNode
+
+            left_compare = allocator.new_temporary
+            right_compare = allocator.new_temporary
+            and_temp = allocator.new_temporary
+            cast_temp = allocator.new_temporary
+
+            ir << Eval.new(left_compare, Compare.new(llvm_type(@type), left_temp))
+            ir << Eval.new(right_compare, Compare.new(llvm_type(@type), right_temp))
+            ir << Eval.new(and_temp, And.new(:i1, left_compare, right_compare))
+            ir << Eval.new(cast_temp, ZeroExtend.new(and_temp, :i1, llvm_type(@type)))
+            return cast_temp
+        end
+
         temp = allocator.new_temporary
         ir << Eval.new(temp, binop)
-        temp
+        if self.is_a? BooleanOperator
+            cast_temp = allocator.new_temporary
+            ir << Eval.new(cast_temp, ZeroExtend.new(temp, :i1, llvm_type(@type)))
+            cast_temp
+        else
+            temp
+        end
     end
 end
 class AritmeticOperator < BinaryOperator; end
+class BooleanOperator < BinaryOperator; end
+class LogicOperator < BinaryOperator; end
 
 class AddNode                   < AritmeticOperator; def to_s; "+" end end
 class SubNode                   < AritmeticOperator; def to_s; "-" end end
 class MulNode                   < AritmeticOperator; def to_s; "*" end end
 class DivNode                   < AritmeticOperator; def to_s; "/" end end
-class LessThenNode              < BinaryOperator; def to_s; "<" end end
-class GreaterThenNode           < BinaryOperator; def to_s; ">" end end
-class LessEqualNode             < BinaryOperator; def to_s; "<=" end end
-class GreaterEqualNode          < BinaryOperator; def to_s; ">=" end end
-class NotEqualNode              < BinaryOperator; def to_s; "!=" end end
-class EqualNode                 < BinaryOperator; def to_s; "==" end end
-class AndNode                   < BinaryOperator; def to_s; "&&" end end
-class OrNode                    < BinaryOperator; def to_s; "||" end end
+class LessThenNode              < BooleanOperator; def to_s; "<" end end
+class GreaterThenNode           < BooleanOperator; def to_s; ">" end end
+class LessEqualNode             < BooleanOperator; def to_s; "<=" end end
+class GreaterEqualNode          < BooleanOperator; def to_s; ">=" end end
+class NotEqualNode              < BooleanOperator; def to_s; "!=" end end
+class EqualNode                 < BooleanOperator; def to_s; "==" end end
+class AndNode                   < LogicOperator; def to_s; "&&" end end
+class OrNode                    < LogicOperator; def to_s; "||" end end
 
 class TypeCastNode < Struct.new(:type, :expr)
     def get_type env
@@ -362,11 +397,13 @@ class CallNode < Struct.new(:name, :args)
 
         info = env.lookup name
         num_formals = info[:num_formals]
+        @type = info[:type]
         num_args = args.count
 
         raise SemanticError.new "'#{name}' expected #{num_formals} arguments, but got #{args.count}" if num_args != num_formals
 
         formals = info[:formals]
+        @formal_types = formals.map { |f| f.type }
         num_args.times do |i|
             if formals[i].get_type(env) != args[i].get_type(env)
                 raise SemanticError.new "'#{name}' expected argument at position #{i+1} to be of type #{type_to_s formals[i].get_type(env)}, but got type #{type_to_s args[i].get_type(env)}"
@@ -376,10 +413,12 @@ class CallNode < Struct.new(:name, :args)
         return true
     end
     def generate_ir ir, allocator
-        argument_list = args.map do |expr|
-            expr.generate_ir ir, allocator
+        argument_list = args.each_with_index.map do |expr, i|
+            id = expr.generate_ir ir, allocator
+            {:type => llvm_type(@formal_types[i]), :id => id}
         end
-         call = Call.new(Id.new(name), argument_list)
+
+         call = Call.new(llvm_type(@type), Id.new(name), argument_list)
 
         temp = allocator.new_temporary
         ir << Eval.new(temp, call)
@@ -413,6 +452,7 @@ class ReturnNode < Struct.new(:expr)
         else
             ir << Return.new(llvm_type(@type), expr.generate_ir(ir, allocator))
         end
+        allocator.new_temporary # allocate temporary for implicit basic block
     end
 end
 class WhileNode < Struct.new(:condition, :body)

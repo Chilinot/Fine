@@ -93,20 +93,12 @@ describe "ir" do
             ]
         )]
     end
-    it "handles many things" do
+    it "handles aritmeticoperators" do
         ast_nodes = {
                 AddNode          => Add,
                 SubNode          => Sub,
                 MulNode          => Mul,
                 DivNode          => Div,
-                LessThenNode     => LessThen,
-                GreaterThenNode  => GreaterThen,
-                LessEqualNode    => LessEqual,
-                GreaterEqualNode => GreaterEqual,
-                NotEqualNode     => NotEqual,
-                EqualNode        => Equal,
-                AndNode          => And,
-                OrNode           => Or
         }
         ast_nodes.each do |ast, ir|
             expect(generate_ir (string_to_ast "int main(void) { return 1 #{ast.new} 2; }")).to eq Ir.new [ Function.new("main",:i32, [],[],
@@ -117,6 +109,50 @@ describe "ir" do
             )]
         end
     end
+
+    it "handles boolean operators" do
+        ast_nodes = {
+                LessThenNode     => LessThen,
+                GreaterThenNode  => GreaterThen,
+                LessEqualNode    => LessEqual,
+                GreaterEqualNode => GreaterEqual,
+                NotEqualNode     => NotEqual,
+                EqualNode        => Equal,
+        }
+        ast_nodes.each do |ast, ir|
+            expect(generate_ir (string_to_ast "int main(void) { return 1 #{ast.new} 2; }")).to eq Ir.new [ Function.new("main",:i32, [],[],
+                [
+                    Eval.new(Temporary.new(1), ir.new(:i32, Constant.new(:i32, 1), Constant.new(:i32, 2))),
+                    Eval.new(Temporary.new(2), ZeroExtend.new(Temporary.new(1), :i1, :i32)),
+                    Return.new(:i32, Temporary.new(2))
+                ]
+            )]
+        end
+    end
+
+    it "handles && operator" do
+            expect(generate_ir (string_to_ast "int main(void) { return 1 && 2; }")).to eq Ir.new [ Function.new("main",:i32, [],[],
+                [
+                    Eval.new(Temporary.new(1), Compare.new(:i32, Constant.new(:i32, 1))),
+                    Eval.new(Temporary.new(2), Compare.new(:i32, Constant.new(:i32, 2))),
+                    Eval.new(Temporary.new(3), And.new(:i1, Temporary.new(1), Temporary.new(2))),
+                    Eval.new(Temporary.new(4), ZeroExtend.new(Temporary.new(3), :i1, :i32)),
+                    Return.new(:i32, Temporary.new(4))
+                ]
+            )]
+    end
+
+    it "handles || operator" do
+            expect(generate_ir (string_to_ast "int main(void) { return 1 || 2; }")).to eq Ir.new [ Function.new("main",:i32, [],[],
+                [
+                    Eval.new(Temporary.new(1), Or.new(:i32, Constant.new(:i32, 1), Constant.new(:i32, 2))),
+                    Eval.new(Temporary.new(2), Compare.new(:i32, Temporary.new(1))),
+                    Eval.new(Temporary.new(3), ZeroExtend.new(Temporary.new(2), :i1, :i32)),
+                    Return.new(:i32, Temporary.new(3))
+                ]
+            )]
+    end
+
     it "handles more complex expressions" do
             expect(generate_ir (string_to_ast "int main(void) { return 42 + 2 != 42 - 2 * 33; }")).to eq Ir.new [ Function.new("main",:i32, [],[],
                 [
@@ -124,7 +160,8 @@ describe "ir" do
                     Eval.new(Temporary.new(2), Mul.new(:i32, Constant.new(:i32, 2), Constant.new(:i32, 33))),
                     Eval.new(Temporary.new(3), Sub.new(:i32, Constant.new(:i32, 42), Temporary.new(2))),
                     Eval.new(Temporary.new(4), NotEqual.new(:i32, Temporary.new(1), Temporary.new(3))),
-                    Return.new(:i32, Temporary.new(4))
+                    Eval.new(Temporary.new(5), ZeroExtend.new(Temporary.new(4), :i1, :i32)),
+                    Return.new(:i32, Temporary.new(5))
                 ]
             )]
     end
@@ -243,7 +280,7 @@ describe "ir" do
             GlobalInt.new("foo"),
             Function.new("main",:i32, [], [],
             [
-                Eval.new(Temporary.new(1), Call.new(Id.new("main", true), [])),
+                Eval.new(Temporary.new(1), Call.new(:i32, Id.new("main", true), [])),
                 Store.new(:i32, Id.new("foo", true), Temporary.new(1)),
                 Return.new(:i32, Constant.new(:i32, 0))
             ])
@@ -258,7 +295,7 @@ describe "ir" do
             ]),
             Function.new("main",:i32, [], [],
             [
-                Eval.new(Temporary.new(1), Call.new(Id.new("id", true), [Constant.new(:i32, 42)])),
+                Eval.new(Temporary.new(1), Call.new(:i32, Id.new("id", true), [{:type => :i32, :id => Constant.new(:i32, 42)}])),
                 Return.new(:i32, Constant.new(:i32, 0))
             ])
         ]
@@ -275,7 +312,7 @@ describe "ir" do
                 Eval.new(Temporary.new(1), Add.new(:i32, Constant.new(:i32, 20), Constant.new(:i32, 10))),
                 Eval.new(Temporary.new(2), Add.new(:i32, Temporary.new(1), Constant.new(:i32, 10))),
                 Eval.new(Temporary.new(3), Add.new(:i32, Temporary.new(2), Constant.new(:i32, 2))),
-                Eval.new(Temporary.new(4), Call.new(Id.new("id", true), [Temporary.new(3)])),
+                Eval.new(Temporary.new(4), Call.new(:i32, Id.new("id", true), [{:type => :i32, :id => Temporary.new(3)}])),
                 Return.new(:i32, Constant.new(:i32, 0))
             ])
         ]
@@ -404,8 +441,9 @@ describe "ir" do
                 Eval.new(Temporary.new(1), Load.new(:i32, Id.new("i", false))),
                 Eval.new(Temporary.new(2), Add.new(:i32, Constant.new(:i32, 10), Constant.new(:i32, 1))),
                 Eval.new(Temporary.new(3), LessThen.new(:i32, Temporary.new(1), Temporary.new(2))),
-                Eval.new(Temporary.new(4), Compare.new(:i32, Temporary.new(3))),
-                Branch.new(Temporary.new(4), Label.new("if_then", 1), Label.new("if_end", 2)),
+                Eval.new(Temporary.new(4), ZeroExtend.new(Temporary.new(3), :i1, :i32)),
+                Eval.new(Temporary.new(5), Compare.new(:i32, Temporary.new(4))),
+                Branch.new(Temporary.new(5), Label.new("if_then", 1), Label.new("if_end", 2)),
                 Label.new("if_then", 1),
                     # Constant.new(:i32, 42),  # Don't emit ir for stupid code!
                     Jump.new(Label.new("if_end", 2)),
