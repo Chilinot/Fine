@@ -8,12 +8,12 @@ class ProgramNode < Struct.new(:nodes)
         end
         return true
     end
-    def generate_ir ir
+    def generate_ir builtin, ir
         nodes.each do |node|
             if node.instance_of? VariableDeclarationNode or node.instance_of? ArrayDeclarationNode
-                node.generate_ir ir, true # generate global declarations
+               node.generate_ir builtin, ir, true # generate global declarations
             else
-                node.generate_ir ir
+                node.generate_ir builtin, ir
             end
         end
         return ir
@@ -28,7 +28,7 @@ class VariableDeclarationNode < Struct.new(:type, :name)
         env[name] = {:class => :VARIABLE, :type => type}
         return true
     end
-    def generate_ir ir, global = false
+    def generate_ir builtin, ir, global = false
         case type
         when :INT
             if global
@@ -50,10 +50,11 @@ class ArrayDeclarationNode < Struct.new(:type, :name, :num_elements)
         "#{type}_ARRAY".to_sym
     end
     def check_semantics env
+        get_type env
         env[name] =  {:class => :ARRAY, :type => type, :num_elements => num_elements}
         return true
     end
-    def generate_ir ir, global = false
+    def generate_ir builtin, ir, global = false
         case type
         when :INT
             if global
@@ -80,7 +81,10 @@ class ExternFunctionDeclarationNode < Struct.new(:type, :name, :formals)
         end
         return true
     end
-    def generate_ir ir
+    def generate_ir builtin, ir
+        if builtin.is_built_in? self
+            builtin.include_builtin(name)
+        end
         return ir
     end
 end
@@ -116,21 +120,25 @@ class FunctionDeclarationNode < Struct.new(:type, :name, :formals, :body)
         env.pop_scope
         return true
     end
-    def generate_ir ir
+    def generate_ir builtin, ir
         ir_formals = []
         allocator = Allocator.new
         formals.each do |f|
-            ir_formals << FormalArgument.new(f.name, llvm_type(f.get_type(:no_environment)), allocator.new_temporary)
+            if f.class == ArrayDeclarationNode
+                ir_formals << FormalArgument.new(f.name, llvm_type(f.get_type(:no_environment)), :YOU_SHALL_NOT_GENERATE_ALLOCATIONS)
+            else
+                ir_formals << FormalArgument.new(f.name, llvm_type(f.get_type(:no_environment)), allocator.new_temporary)
+            end
         end
 
         ir_declarations = []
         body.declarations.each do |d|
-            d.generate_ir ir_declarations
+            d.generate_ir builtin, ir_declarations
         end
 
         ir_statments = []
         body.statments.each do |s|
-            s.generate_ir ir_statments, allocator
+            s.generate_ir builtin, ir_statments, allocator
         end
         ir_statments << Return.new(:void) if type == :VOID and ir_statments.last.class != Return
 
@@ -159,28 +167,43 @@ class ConstantNode < Struct.new(:type, :value)
         get_type env
         return true
     end
-    def generate_ir ir, _
+    def generate_ir builtin, ir, _
         Constant.new(llvm_type(type), value.ord)
     end
 end
 
 class IdentifierNode < Struct.new(:name)
     def get_type env
-        @type = env[name][:type]
-        if [:ARRAY, :FUNCTION].include? env[name][:class]
-            return "#{env[name][:type]}_#{env[name][:class]}".to_sym
-        else
-            return env[name][:type]
+        # @type = env[name][:type]
+        @identifier_type = env[name][:class]
+        if :ARRAY == env[name][:class]
+            @num_elements = env[name][:num_elements]
+            @plain_type = env[name][:type]
         end
+        if [:ARRAY, :FUNCTION].include? env[name][:class]
+            @type = "#{env[name][:type]}_#{env[name][:class]}".to_sym
+
+        else
+            @type = env[name][:type]
+        end
+        @type
     end
     def check_semantics env
         get_type env
         env.defined? name
     end
-    def generate_ir ir, allocator
-        temp = allocator.new_temporary
-        ir << Eval.new(temp, Load.new(llvm_type(@type), Id.new(name)))
-        temp
+    def generate_ir builtin, ir, allocator
+        # puts @identifier_type
+        if @identifier_type == :ARRAY
+
+            temp = allocator.new_temporary
+            ir << Eval.new(temp, ArrayElement.new(llvm_type(@plain_type), name, @num_elements, Constant.new(:i32, 0)))
+            temp
+        else
+            temp = allocator.new_temporary
+            ir << Eval.new(temp, Load.new(llvm_type(@type), Id.new(name)))
+            temp
+        end
     end
 end
 
@@ -197,14 +220,14 @@ class ArrayLookupNode < Struct.new(:name, :expr)
         raise SemanticError.new "'#{name}' is not an array" unless env[name][:class] == :ARRAY
         return true
     end
-    def generate_address_ir ir, allocator
-        index = expr.generate_ir(ir, allocator)
+    def generate_address_ir builtin, ir, allocator
+        index = expr.generate_ir(builtin, ir, allocator)
         temp = allocator.new_temporary
         ir << Eval.new(temp, ArrayElement.new(llvm_type(@type), name, @num_elements, index))
         return temp
     end
-    def generate_ir ir, allocator
-        element_pointer = generate_address_ir ir, allocator
+    def generate_ir builtin, ir, allocator
+        element_pointer = generate_address_ir builtin, ir, allocator
         temp = allocator.new_temporary
         ir << Eval.new(temp, Load.new(llvm_type(@type), element_pointer))
         return temp
@@ -218,8 +241,8 @@ class UnaryMinusNode < Struct.new(:expr)
     def check_semantics env
         expr.check_semantics env
     end
-    def generate_ir ir, allocator
-        e = expr.generate_ir(ir, allocator)
+    def generate_ir builtin, ir, allocator
+        e = expr.generate_ir(builtin, ir, allocator)
         binop = Sub.new(:i32, Constant.new(:i32, 0), e)
 
         temp = allocator.new_temporary
@@ -237,8 +260,8 @@ class NotNode < Struct.new(:expr)
         get_type env
         expr.check_semantics env
     end
-    def generate_ir ir, allocator
-        not_expr = expr.generate_ir(ir, allocator)
+    def generate_ir builtin, ir, allocator
+        not_expr = expr.generate_ir(builtin, ir, allocator)
         not_temp = allocator.new_temporary
         zero_extend_temp = allocator.new_temporary
 
@@ -264,7 +287,7 @@ class BinaryOperator < Struct.new(:left, :right)
         @type = right.get_type env
         return true
     end
-    def generate_ir ir, allocator
+    def generate_ir builtin, ir, allocator
         ast_nodes = {
                 AddNode          => Add,
                 SubNode          => Sub,
@@ -279,8 +302,8 @@ class BinaryOperator < Struct.new(:left, :right)
                 AndNode          => And,
                 OrNode           => Or
         }
-        left_temp = left.generate_ir ir, allocator
-        right_temp = right.generate_ir ir, allocator
+        left_temp = left.generate_ir builtin, ir, allocator
+        right_temp = right.generate_ir builtin, ir, allocator
         binop = ast_nodes[self.class].new(llvm_type(@type), left_temp, right_temp)
 
 
@@ -350,11 +373,11 @@ class TypeCastNode < Struct.new(:type, :expr)
     def check_semantics env
         get_type(env) == type
     end
-    def generate_ir ir, allocator
+    def generate_ir builtin, ir, allocator
         if type == @expr_type # discard if same type
-            return expr.generate_ir(ir, allocator)
+            return expr.generate_ir(builtin, ir, allocator)
         end
-        cast =  Cast.new(expr.generate_ir(ir, allocator), llvm_type(@expr_type), llvm_type(type))
+        cast =  Cast.new(expr.generate_ir(builtin, ir, allocator), llvm_type(@expr_type), llvm_type(type))
 
         temp = allocator.new_temporary
         ir << Eval.new(temp, cast)
@@ -382,11 +405,11 @@ class AssignNode                < BinaryOperator
             raise SemanticError.new "can not assign to expression"
         end
     end
-    def generate_ir ir, allocator
+    def generate_ir builtin, ir, allocator
         if left.instance_of? IdentifierNode
-            ir << Store.new(llvm_type(@left_type), Id.new(left.name), right.generate_ir(ir, allocator))
+            ir << Store.new(llvm_type(@left_type), Id.new(left.name), right.generate_ir(builtin, ir, allocator))
         elsif left.instance_of? ArrayLookupNode
-            ir << Store.new(llvm_type(@left_type), left.generate_address_ir(ir, allocator), right.generate_ir(ir, allocator))
+            ir << Store.new(llvm_type(@left_type), left.generate_address_ir(builtin, ir, allocator), right.generate_ir(builtin, ir, allocator))
         end
     end
 end
@@ -409,7 +432,7 @@ class CallNode < Struct.new(:name, :args)
         raise SemanticError.new "'#{name}' expected #{num_formals} arguments, but got #{args.count}" if num_args != num_formals
 
         formals = info[:formals]
-        @formal_types = formals.map { |f| f.type }
+        @formal_types = args.map { |a| a.get_type(env) }
         num_args.times do |i|
             if formals[i].get_type(env) != args[i].get_type(env)
                 raise SemanticError.new "'#{name}' expected argument at position #{i+1} to be of type #{type_to_s formals[i].get_type(env)}, but got type #{type_to_s args[i].get_type(env)}"
@@ -418,9 +441,10 @@ class CallNode < Struct.new(:name, :args)
 
         return true
     end
-    def generate_ir ir, allocator
+    def generate_ir builtin, ir, allocator
+        # puts @formal_types.inspect
         argument_list = args.each_with_index.map do |expr, i|
-            id = expr.generate_ir ir, allocator
+            id = expr.generate_ir builtin, ir, allocator
             {:type => llvm_type(@formal_types[i]), :id => id}
         end
 
@@ -456,11 +480,11 @@ class ReturnNode < Struct.new(:expr)
         end
         return true
     end
-    def generate_ir ir, allocator
+    def generate_ir builtin, ir, allocator
         if expr == :VOID
             ir << Return.new(llvm_type(@type))
         else
-            ir << Return.new(llvm_type(@type), expr.generate_ir(ir, allocator))
+            ir << Return.new(llvm_type(@type), expr.generate_ir(builtin, ir, allocator))
         end
         allocator.new_temporary # allocate temporary for implicit basic block
     end
@@ -472,21 +496,21 @@ class WhileNode < Struct.new(:condition, :body)
         body.each { |stmt| stmt.check_semantics env }
         return true
     end
-    def generate_ir ir, allocator
+    def generate_ir builtin, ir, allocator
         while_start = allocator.new_label "while_start"
         while_body = allocator.new_label "while_body"
         while_end = allocator.new_label "while_end"
 
         ir << Jump.new(while_start)
         ir << while_start
-            cond = condition.generate_ir ir, allocator
+            cond = condition.generate_ir builtin, ir, allocator
             temp = allocator.new_temporary
             ir << Eval.new(temp, Compare.new(llvm_type(@type), cond))
             ir << Branch.new(temp, while_body, while_end)
         ir << while_body
 
             body.each do |stmt|
-                stmt.generate_ir ir, allocator
+                stmt.generate_ir builtin, ir, allocator
             end
 
             ir << Jump.new(while_start)
@@ -501,13 +525,13 @@ class IfNode < Struct.new(:condition, :then_block, :else_block)
         else_block.each { |stmt| stmt.check_semantics env } if else_block
         return true
     end
-    def generate_ir ir, allocator
+    def generate_ir builtin, ir, allocator
         if_then = allocator.new_label "if_then"
         if_else = allocator.new_label "if_else" if else_block
         if_end = allocator.new_label "if_end"
 
         # if condition
-        cond = condition.generate_ir ir, allocator
+        cond = condition.generate_ir builtin, ir, allocator
         temp = allocator.new_temporary
         ir << Eval.new(temp, Compare.new(llvm_type(@type), cond))
         if else_block
@@ -519,7 +543,7 @@ class IfNode < Struct.new(:condition, :then_block, :else_block)
         # then block
         ir << if_then
         then_block.each do |stmt|
-            stmt.generate_ir ir, allocator
+            stmt.generate_ir builtin, ir, allocator
         end
         ir << Jump.new(if_end)
 
@@ -527,7 +551,7 @@ class IfNode < Struct.new(:condition, :then_block, :else_block)
         if else_block
             ir << if_else
             else_block.each do |stmt|
-                stmt.generate_ir ir, allocator
+                stmt.generate_ir builtin, ir, allocator
             end
             ir << Jump.new(if_end)
         end

@@ -1,3 +1,4 @@
+require_relative "../code/builtin.rb"
 
 class Temporary < Struct.new(:index)
     def fix_globals locals; end
@@ -52,9 +53,13 @@ class Constant < Struct.new(:type, :value)
 end
 
 
-
 def generate_ir ast
-    ir = Ir.new (ast.generate_ir [])
+    builtin = Builtin.new
+    ir = Ir.new(ast.generate_ir(builtin, []))
+    if builtin.has_header?
+        ir.definitions.unshift builtin
+    end
+
     functions = ir.definitions.select { |d| d.instance_of? Function }
     functions.each do |f|
         formals = f.formals.map {|f| f[:name] }
@@ -93,7 +98,7 @@ class GlobalChar < GlobalVariable; def generate_llvm formal_map = nil; "@#{name}
 
 class LocalVariable < Struct.new(:name); end
 class LocalInt < LocalVariable; def generate_llvm formal_map = nil; "    %#{name} = alloca i32\n" end end
-class LocalChar < LocalVariable; def generate_llvm formal_map = nil; "   %#{name} = alloca i8\n" end end
+class LocalChar < LocalVariable; def generate_llvm formal_map = nil; "    %#{name} = alloca i8\n" end end
 
 class GlobalArray < Struct.new(:name, :size); end
 class GlobalIntArray < GlobalArray; def generate_llvm formal_map = nil; "@#{name} = global [#{size} x i32] zeroinitializer\n" end end
@@ -105,6 +110,7 @@ class LocalCharArray < LocalArray; def generate_llvm formal_map = nil; "    %#{n
 
 class FormalArgument < Struct.new(:name, :type, :temporary)
     def generate_llvm formal_map = nil
+        return "" if type.instance_of? Pointer or temporary == :YOU_SHALL_NOT_GENERATE_ALLOCATIONS
         "    #{temporary.generate_llvm} = alloca #{type}\n" +
         "    store #{type} %#{name}, #{type}* #{temporary.generate_llvm}\n"
     end
@@ -116,10 +122,11 @@ class Function < Struct.new(:name, :type, :formals, :declarations, :instructions
         formal_to_temporary = {}
         formal_list = ""
         formals.each do |f|
+            # puts "formal type #{type}"
             formal_list += ", " unless formal_list.empty?
             formal_list += "#{f.type} %#{f.name}"
             formal_allocation += f.generate_llvm
-            formal_to_temporary[f.name] = f.temporary.generate_llvm
+            formal_to_temporary[f.name] = f.temporary.generate_llvm unless f.temporary == :YOU_SHALL_NOT_GENERATE_ALLOCATIONS
         end
 
         header = "\ndefine #{type} @#{name}(#{formal_list}) {\n"
@@ -189,7 +196,6 @@ class Equal        < Binop; end
 class And          < Binop; end
 class Or           < Binop; end
 
-
 class ArrayElement < Struct.new(:type, :name, :num_elements, :index)
     def fix_globals locals
         # global = locals.include? name
@@ -199,7 +205,13 @@ class ArrayElement < Struct.new(:type, :name, :num_elements, :index)
         "#{@global ? "@" : "%"}#{name}"
     end
     def generate_llvm formal_map = nil
-        "getelementptr inbounds [#{num_elements} x #{type}]* #{identifier}, i32 0, i32 #{index.generate_llvm(formal_map)}"
+        if num_elements
+            array_type = "[#{num_elements} x #{type}]*"
+            "getelementptr inbounds #{array_type} #{identifier}, i32 0, i32 #{index.generate_llvm(formal_map)}"
+        else
+            array_type = "i32*" unless num_elements
+            "getelementptr inbounds #{array_type} #{identifier}, i32 #{index.generate_llvm(formal_map)}"
+        end
     end
 end
 
@@ -236,7 +248,8 @@ class Load < Struct.new(:type, :source);
         source.fix_globals locals
     end
     def generate_llvm formal_map = nil
-        "load #{type}* #{source.generate_llvm(formal_map)}"
+        pointer = type.instance_of?(Pointer) ? "" : "*"
+        "load #{type}#{pointer} #{source.generate_llvm(formal_map)}"
     end
 end
 

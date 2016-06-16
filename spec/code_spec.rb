@@ -326,6 +326,167 @@ define i32 @main() {
     %1 = call i32 @negate (i32 1)
     ret i32 %1
 }",
+#-------------------------------------------------------------------
+"int first(int array[]) { return array[0]; } int main(void) { int things[10]; things[0] = 42; return first(things); }" =>
+"
+define i32 @first(i32* %array) {
+    %1 = getelementptr inbounds i32* %array, i32 0
+    %2 = load i32* %1
+    ret i32 %2
+}
+define i32 @main() {
+    %things = alloca [10 x i32]
+    %1 = getelementptr inbounds [10 x i32]* %things, i32 0, i32 0
+    store i32 42, i32* %1
+    %2 = getelementptr inbounds [10 x i32]* %things, i32 0, i32 0
+    %3 = call i32 @first (i32* %2)
+    ret i32 %3
+}",
+#-------------------------------------------------------------------
+"int second(int a[]) { return a[1]; } int main(void) { int things[10]; things[0] = 42; return second(things); }" =>
+"
+define i32 @second(i32* %a) {
+    %1 = getelementptr inbounds i32* %a, i32 1
+    %2 = load i32* %1
+    ret i32 %2
+}
+define i32 @main() {
+    %things = alloca [10 x i32]
+    %1 = getelementptr inbounds [10 x i32]* %things, i32 0, i32 0
+    store i32 42, i32* %1
+    %2 = getelementptr inbounds [10 x i32]* %things, i32 0, i32 0
+    %3 = call i32 @second (i32* %2)
+    ret i32 %3
+}",
+#-------------------------------------------------------------------
+"int main(void) { char c; c = 'c'; return (int)c; }" =>
+"
+define i32 @main() {
+    %c = alloca i8
+    store i8 99, i8* %c
+    %1 = load i8* %c
+    %2 = sext i8 %1 to i32
+    ret i32 %2
+}",
+#-------------------------------------------------------------------
+"char main(void) { int i; i = 99; return (char)i; }" =>
+"
+define i8 @main() {
+    %i = alloca i32
+    store i32 99, i32* %i
+    %1 = load i32* %i
+    %2 = trunc i32 %1 to i8
+    ret i8 %2
+}",
+#-------------------------------------------------------------------
+"char main(void) { int i; i = 99; return (char)(int)(char)i; }" =>
+"
+define i8 @main() {
+    %i = alloca i32
+    store i32 99, i32* %i
+    %1 = load i32* %i
+    %2 = trunc i32 %1 to i8
+    %3 = sext i8 %2 to i32
+    %4 = trunc i32 %3 to i8
+    ret i8 %4
+}",
+#-------------------------------------------------------------------
+"void putint(int n); int main(void) { putint(42); return 10; }" =>
+'%struct._IO_FILE = type { i32, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, %struct._IO_marker*, %struct._IO_FILE*, i32, i32, i64, i16, i8, [1 x i8], i8*, i64, i8*, i8*, i8*, i8*, i64, i32, [20 x i8] }
+%struct._IO_marker = type { %struct._IO_marker*, %struct._IO_FILE*, i32 }
+
+@.str = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@stdout = external global %struct._IO_FILE*
+@.str1 = private unnamed_addr constant [3 x i8] c"%s\00", align 1
+
+declare i32 @printf(i8*, ...)
+declare i32 @fputs(i8*, %struct._IO_FILE*)
+declare i32 @__isoc99_scanf(i8*, ...)
+
+define void @putint(i32 %x) {
+    %1 = alloca i32, align 4
+    store i32 %x, i32* %1, align 4
+    %2 = load i32* %1, align 4
+    %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([3 x i8]* @.str, i32 0, i32 0), i32 %2)
+    ret void
+}
+
+define i32 @main() {
+    call void @putint (i32 42)
+    ret i32 10
+}',
+#-------------------------------------------------------------------
+"void putstring(char s[]); int main(void) { return 10; }" =>
+'%struct._IO_FILE = type { i32, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, %struct._IO_marker*, %struct._IO_FILE*, i32, i32, i64, i16, i8, [1 x i8], i8*, i64, i8*, i8*, i8*, i8*, i64, i32, [20 x i8] }
+%struct._IO_marker = type { %struct._IO_marker*, %struct._IO_FILE*, i32 }
+
+@.str = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@stdout = external global %struct._IO_FILE*
+@.str1 = private unnamed_addr constant [3 x i8] c"%s\00", align 1
+
+declare i32 @printf(i8*, ...)
+declare i32 @fputs(i8*, %struct._IO_FILE*)
+declare i32 @__isoc99_scanf(i8*, ...)
+
+define void @putstring(i8* %s) {
+    %1 = alloca i8*, align 8
+    store i8* %s, i8** %1, align 8
+    %2 = load i8** %1, align 8
+    %3 = load %struct._IO_FILE** @stdout, align 8
+    %4 = call i32 @fputs(i8* %2, %struct._IO_FILE* %3)
+    ret void
+}
+
+define i32 @main() {
+    ret i32 10
+}',
+#-------------------------------------------------------------------
+"int getint(void); int main(void) { return 10; }" =>
+'%struct._IO_FILE = type { i32, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, %struct._IO_marker*, %struct._IO_FILE*, i32, i32, i64, i16, i8, [1 x i8], i8*, i64, i8*, i8*, i8*, i8*, i64, i32, [20 x i8] }
+%struct._IO_marker = type { %struct._IO_marker*, %struct._IO_FILE*, i32 }
+
+@.str = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@stdout = external global %struct._IO_FILE*
+@.str1 = private unnamed_addr constant [3 x i8] c"%s\00", align 1
+
+declare i32 @printf(i8*, ...)
+declare i32 @fputs(i8*, %struct._IO_FILE*)
+declare i32 @__isoc99_scanf(i8*, ...)
+
+define i32 @getint() {
+    %i = alloca i32, align 4
+    %1 = call i32 (i8*, ...)* @__isoc99_scanf(i8* getelementptr inbounds ([3 x i8]* @.str, i32 0, i32 0), i32* %i)
+    %2 = load i32* %i, align 4
+    ret i32 %2
+}
+
+define i32 @main() {
+    ret i32 10
+}',
+#-------------------------------------------------------------------
+"int getstring(char s[]); int main(void) { return 10; }" =>
+'%struct._IO_FILE = type { i32, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, %struct._IO_marker*, %struct._IO_FILE*, i32, i32, i64, i16, i8, [1 x i8], i8*, i64, i8*, i8*, i8*, i8*, i64, i32, [20 x i8] }
+%struct._IO_marker = type { %struct._IO_marker*, %struct._IO_FILE*, i32 }
+
+@.str = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@stdout = external global %struct._IO_FILE*
+@.str1 = private unnamed_addr constant [3 x i8] c"%s\00", align 1
+
+declare i32 @printf(i8*, ...)
+declare i32 @fputs(i8*, %struct._IO_FILE*)
+declare i32 @__isoc99_scanf(i8*, ...)
+
+define i32 @getstring(i8* %s) {
+    %1 = alloca i8*, align 8
+    store i8* %s, i8** %1, align 8
+    %2 = load i8** %1, align 8
+    %3 = call i32 (i8*, ...)* @__isoc99_scanf(i8* getelementptr inbounds ([3 x i8]* @.str1, i32 0, i32 0), i8* %2)
+    ret i32 %3
+}
+
+define i32 @main() {
+    ret i32 10
+}',
         }
         data.each do |uc, llvm|
             expect(uc_to_llvm(uc)).to eq llvm

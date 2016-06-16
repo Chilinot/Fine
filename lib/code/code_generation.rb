@@ -1,6 +1,18 @@
 
+class Pointer
+    def initialize type
+        @type = type
+    end
+    def to_s
+        "#{@type}*"
+    end
+end
+
+
 def llvm_type type
     map = {
+        :INT_ARRAY => Pointer.new(:i32),
+        :CHAR_ARRAY => Pointer.new(:i8),
         :INT  => :i32,
         :CHAR => :i8,
         :VOID => :void
