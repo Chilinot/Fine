@@ -1,14 +1,36 @@
-\textit{This brief report explains how we constructed the intermediate representation for the $\mu$C programming language.}
+\textit{This brief report explains how we constructed the intermediate representation for the $\mu$C programming language and generated the concluding LLVM-assembler.}
 
 \section{Intermediate Representation}
 
-\subsection{Control Flow Statements}
-
-\subsection{Variable References}
+%TODO How is our IR represented? Structure etc.
+%TODO How is it built?
 
 \section{Code Generation}
 
+%TODO How is the LLVM code generated out of the IR structure?
+%TODO  - Walking down the IR-tree etc.
+
 \subsection{LLVM Structure}
+
+%TODO What is the general layout of LLVM code?
+%TODO How does it compare to assembler such as MIPS?
+
+\subsection{Control Flow Statements}
+
+%TODO How do we handle if-statements?
+%TODO How do we handle while-statements?
+%TODO What is the structure of these in IR and LLVM?
+%TODO Basic blocks?
+
+\subsection{Variable References}
+
+%TODO Stack allocations
+%TODO Global allocations
+%TODO Arrays?
+%TODO How are arrays passed in function calls?
+%TODO How do we access regular allocations, store, load etc.
+%TODO How do we access array-elements? store load etc
+%TODO Temporaries and their counters
 
 \section{Design Decisions}
 
