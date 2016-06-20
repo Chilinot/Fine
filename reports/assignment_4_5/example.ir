@@ -1,0 +1,8 @@
+[
+  GlobalVariable(i32, i),
+
+  Function(main, i32, [], [], [
+    Eval(ID(i), Constant(i32, 1)),
+    Return(ID(i))
+  ])
+]

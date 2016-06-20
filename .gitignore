@@ -10,7 +10,9 @@ coverage/
 
 # Ignore all files in reports directory.
 reports/*/*
-# But do not ignore these three files!
+# But do not ignore these files!
 !reports/*/main.tex
 !reports/*/body.tex
 !reports/*/Makefile
+!reports/assignment_4_5/example.c
+!reports/assignment_4_5/example.ir
