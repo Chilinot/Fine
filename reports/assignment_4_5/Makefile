@@ -8,9 +8,12 @@ compile:
 	cat $(MAINFILE) | pdflatex -jobname=$(OUTPUTNAME)
 	#biber $(OUTPUTNAME)
 	cat $(MAINFILE) | pdflatex -jobname=$(OUTPUTNAME)
-.PHONY: compile
 
 # Remove all auto generated files
 clean:
-	rm *.out *.aux *.bbl *.bcf *.blg *.log *.run.xml
-.PHONY: clean
+	rm -f *.out *.aux *.bbl *.bcf *.blg *.log *.run.xml
+
+open: default
+	evince $(OUTPUTNAME).pdf
+
+.PHONY: compile clean
