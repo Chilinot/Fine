@@ -19,3 +19,7 @@ reports/*/*
 !reports/assignment_4_5/stack_allocation.ll
 !reports/assignment_4_5/global_allocation.ll
 !reports/assignment_4_5/scalar_array.ll
+!reports/assignment_4_5/if.c
+!reports/assignment_4_5/if.ll
+!reports/assignment_4_5/while.c
+!reports/assignment_4_5/while.ll
