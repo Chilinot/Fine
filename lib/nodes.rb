@@ -450,13 +450,13 @@ class CallNode < Struct.new(:name, :args)
 
          call = Call.new(llvm_type(@type), Id.new(name), argument_list)
 
-        temp = allocator.new_temporary
         if @type != :VOID
+            temp = allocator.new_temporary
             ir << Eval.new(temp, call)
+            temp
         else
             ir << call
         end
-        temp
     end
 end
 
