@@ -121,6 +121,9 @@ When arrays are used as arguments in function calls, they are passed as referenc
 
 \section{Design Decisions}
 
+%TODO made the IR similar to LLVM to simplify translation
+We made our intermediate representation consciously similar to the expected output of the LLVM-assembly in order to simplify the translation from IR to LLVM. By doing this, the number of IR-instructions is almost identical to the number of LLVM-instructions produced in the final result.
+
 %TODO Our solution to putint, putstring etc. Where we include a header in the LLVM code if needed.
 %TODO How do we handle the creation of new basic blocks in LLVM after a return?
 %TODO Name of the output file and how it is handled using temp files etc.
