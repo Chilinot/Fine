@@ -4,14 +4,14 @@ void putint(int i);
 void putstring(char s[]);
 
 void f(int i, char v[]) {
-  v[0] = i;
+  v[0] = (char)i;
 }
 
 int main(void) {
   char t[2];
   int b;
   b = 10;
-  t[1] = 0;
+  t[1] = '\0';
 
   while (b) {
     f(48+b-1, t);
@@ -19,8 +19,9 @@ int main(void) {
     b = b - 1;
   }
 
-  f('\n', t);
+  f((int)'\n', t);
   putstring(t);
+  return 0;
 }
 
 

@@ -1,18 +1,18 @@
-/* 
+/*
    Factorial function, interactive.
 */
-
 
 void putint(int i);
 int getint(void);
 
 int fac(int n) {
-  if (n == 0) return 1;
-  else return n*fac(n-1);
+  if (n == 0) { return 1; }
+  return n*fac(n-1);
 }
 
 int a;
 int main(void) {
   a = getint();
-  putint( fac(a));
+  putint(fac(a));
+  return 0;
 }

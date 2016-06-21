@@ -20,10 +20,10 @@ void sort(char a[], int l, int r) {
   i = l;
   j = r;
   x = a[(l+r) / 2];
-  
-  while ( i<= j) {
-    while (a[i] < x) i = i + 1;
-    while (x < a[j]) j = j - 1;
+
+  while (i <= j) {
+    while (a[i] < x)  { i = i + 1; }
+    while (x < a[j]) { j = j - 1; }
     if (i<= j) {
       w = a[i];
       a[i] = a[j];
@@ -35,8 +35,8 @@ void sort(char a[], int l, int r) {
 
   putstring (a);
   putstring (eol);
-  if (l < j) sort(a, l,j);
-  if (i < r) sort(a, i, r);
+  if (l < j) { sort(a, l,j); }
+  if (i < r) { sort(a, i, r); }
 
 }
 
@@ -48,18 +48,18 @@ int main(void)
   int q;
 
   eol[0] = '\n';
-  eol[1] = 0;
+  eol[1] = '\0';
 
   n = 26;
 
-  s[n] = 0;
+  s[n] = '\0';
 
   i = 0;
 
   // Fill the string with random-looking data
   q = 11;
   while (i<n) {
-    t = q - (q / 26)*26;
+    t = (char)(q - (q / 26)*26);
     s[i] = 'a'+t;
     i = i + 1;
     q = q + 17;
@@ -71,5 +71,5 @@ int main(void)
   sort(s, 0, n-1); // sort it ...
   putstring(s);  // and print again
   putstring (eol);
-
+  return 0;
 }

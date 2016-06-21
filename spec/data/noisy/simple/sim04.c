@@ -19,7 +19,7 @@ int main(void) {
   x[3] = 'l';
   x[4] = 'o';
   x[5] = '\n';
-  x[6] = 0;
+  x[6] = '\0';
 
   y[0] = 'G';
   y[1] = 'o';
@@ -29,9 +29,10 @@ int main(void) {
   y[5] = 'b';
   y[6] = 'y';
   y[7] = 'e';
-  y[8] = '\n';  
-  y[9] = 0;
+  y[8] = '\n';
+  y[9] = (char)0;
 
-  putstring(x);   
+  putstring(x);
   putstring(y);
+  return 0;
 }

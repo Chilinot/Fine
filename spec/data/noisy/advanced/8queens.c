@@ -40,23 +40,27 @@ int check(int col, int row) {
   i = col-1;
   while (i >= 0) {
     j = board[i];
-    if (j == row) return 0;               // Same row
-    if (j > row && col-i == j-row) 
+    if (j == row) { return 0; }               // Same row
+    if (j > row && col-i == j-row) {
       return 0;                           // Diagonal...
-    if (col-i == row-j) 
+    }
+    if (col-i == row-j) {
       return 0;                           // ...diagonal
+    }
     i = i-1;
   }
   return 1;
 }
 
 int queen(int col, int row) {
-  if (col >= n) 
+  if (col >= n) {
     return 1; // Returning false will generate all solutions...
+  }
   while (row < n) {
     board[col] = row;
-    if (check(col,row) && queen(col+1,0))
+    if (check(col,row) && queen(col+1,0)) {
       return 1;
+    }
     row = row + 1;
   }
   return 0;
@@ -66,7 +70,6 @@ int main(void) {
   n = 8;
   queen(0,0);
   printboard(board);
+  return 0;
 }
-
-
 

@@ -5,4 +5,5 @@ void putint(int x);
 
 int main(void) {
   putint( 42);
+  return 0;
 }

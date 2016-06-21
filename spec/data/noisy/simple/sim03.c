@@ -11,4 +11,5 @@ int main(void) {
   b[5] = 456;
   putint(a[7]);
   putint(b[5]);
+  return 0;
 }

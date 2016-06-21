@@ -37,7 +37,7 @@ int main (void) {
 
   f(x);
   f(y);
-  
+
   x[3] = 56;
   y[3] = 78;
 
@@ -46,21 +46,22 @@ int main (void) {
 
   xc[0] = '\n';
   xc[1] = 'A';
-  xc[2] = 0;
+  xc[2] = '\0';
 
   yc[0] = 'B';
-  yc[1] = 0;
+  yc[1] = '\0';
 
   fc(xc);
   fc(yc);
 
   xc[0] = 'C';
-  xc[1] = 0;
+  xc[1] = '\0';
 
   yc[0] = 'D';
   yc[1] = '\n';
-  yc[2] = 0;
- 
+  yc[2] = '\0';
+
   gc(xc);
   gc(yc);
+  return 0;
 }

@@ -12,22 +12,23 @@ int main(void) {
   char X[2];  char Y[2];
   char W[2];  char nl[2];
 
-  space[0] = ' ';  space[1] = 0;
-  X[0]     = 'X';  X[1]     = 0;
-  Y[0]     = 'Y';  Y[1]     = 0;
-  W[0]     = 'W';  W[1]     = 0;
-  nl[0]    = '\n'; nl[1]    = 0;
+  space[0] = ' ';  space[1] = '\0';
+  X[0]     = 'X';  X[1]     = '\0';
+  Y[0]     = 'Y';  Y[1]     = '\0';
+  W[0]     = 'W';  W[1]     = '\0';
+  nl[0]    = '\n'; nl[1]    = '\0';
 
   i = 0;
   while (i != 21) { // same as  i<21
     putint(i);
     putstring(space);
-    if (i/2*2==i) putstring(X);
+    if (i/2*2==i) { putstring(X); }
     if (i/3*3==i) {
       putstring(Y);
-    } 
-    else if (i>10) putstring(W);
+    }
+    else if (i>10) { putstring(W); }
     putstring(nl);
     i = i + 1;
   }
+  return 0;
 }

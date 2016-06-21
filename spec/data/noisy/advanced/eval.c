@@ -1,25 +1,23 @@
-// A simple calculator, based on predictive parsing.
-//
 // Try:
 // 1+2+3+4
 // 100-10-1
-// (12-4)+(99-11+16)*19 
+// (12-4)+(99-11+16)*19
 // (3*113+((2*2)*(2*2)))*1000000/113
 
 /* Important characters:
 
-'0' = 48
-'9' = 57
-'+' = 43 
-'-' = 45 
-'*' = 42
-'/' = 47
-'(' = 40
-')' = 41
+   '0' = 48
+   '9' = 57
+   '+' = 43
+   '-' = 45
+   '*' = 42
+   '/' = 47
+   '(' = 40
+   ')' = 41
 
 */
 
-void getstring(char s[]);
+int getstring(char s[]);
 void putstring(char s[]);
 void putint(int i);
 
@@ -44,7 +42,7 @@ char cr[2];
 char test_data[21];
 
 int isNumber(char c) {
-  return  (s[p] >= zero) && (s[p] <= nine);
+  return  ((int)s[p] >= zero) && ((int)s[p] <= nine);
 }
 
 // l == 0 => expr; l == 1 => term; l ==0 => factor
@@ -53,51 +51,51 @@ int expr(int l) {
   int b;
   if (l==0) {
     a = expr(1);
-    while (!(s[p] != plus && s[p]!= minus)) {
-      if (s[p] == plus)
-	{
-	  p = p + 1;
-	  b = expr(1);
-	  a = a + b;
-	}
-      else 
-	{
-	  p = p + 1;
-	  b = expr(1);
-	  a = a - b;
-	}
+    while (!((int)s[p] != plus && (int)s[p]!= minus)) {
+      if ((int)s[p] == plus)
+      {
+        p = p + 1;
+        b = expr(1);
+        a = a + b;
+      }
+      else
+      {
+        p = p + 1;
+        b = expr(1);
+        a = a - b;
+      }
     }
     return a;
   }
   else if (l==1) {
     a = expr(2);
-    while (!(s[p] != times && s[p]!= div)) {
-      if (s[p] == times)
-	{
-	  p = p + 1;
-	  b = expr(2);
-	  a = a * b;
-	}
-      else 
-	{
-	  p = p + 1;
-	  b = expr(2);
-	  a = a / b;
-	}
+    while (!((int)s[p] != times && (int)s[p]!= div)) {
+      if ((int)s[p] == times)
+      {
+        p = p + 1;
+        b = expr(2);
+        a = a * b;
+      }
+      else
+      {
+        p = p + 1;
+        b = expr(2);
+        a = a / b;
+      }
     }
     return a;
   }
   else if (l == 2) {
-    if (s[p] ==lpar) {
+    if ((int)s[p] ==lpar) {
       p = p+1;
       a = expr(0);
-      if (s[p] !=rpar)  {
-	putstring( bad_expression );
-	putstring( cr );
+      if ((int)s[p] !=rpar)  {
+        putstring( bad_expression );
+        putstring( cr );
       }
       p = p + 1;
       return a;
-    } 
+    }
     else if (!isNumber(s[p])) {
       putstring( bad_number );
       putstring( cr );
@@ -106,12 +104,13 @@ int expr(int l) {
     else {
       a = 0;
       while (isNumber(s[p])) {
-	a = a * 10 + (s[p] - zero);
-	p = p + 1;
+        a = a * 10 + ((int)s[p] - zero);
+        p = p + 1;
       }
       return a;
     }
   }
+  return a;
 }
 
 int main(void) {
@@ -134,7 +133,7 @@ int main(void) {
   bad_number[ 7]='b';
   bad_number[ 8]='e';
   bad_number[ 9]='r';
-  bad_number[10]=0  ;
+  bad_number[10]= '\0';
 
 
   bad_expression[ 0]='B';
@@ -151,10 +150,10 @@ int main(void) {
   bad_expression[11]='i';
   bad_expression[12]='o';
   bad_expression[13]='n';
-  bad_expression[14]= 0;
+  bad_expression[14]= '\0';
 
   cr[0] = '\n';
-  cr[1] = 0;
+  cr[1] = '\0';
 
   test_data[ 0]='(';
   test_data[ 1]='1';
@@ -176,24 +175,22 @@ int main(void) {
   test_data[17]='*';
   test_data[18]='1';
   test_data[19]='9';
-  test_data[20]= 0 ;
+  test_data[20]= '\0';
 
   getstring(s);
 
   if (s[0]=='t') { //if input string begins with t, use test string
     p = 0;
-    while (test_data[p] != 0) {
+    while ((int)test_data[p] != 0) {
       s[p] = test_data[p];
       p = p + 1;
     }
-    s[p] = 0;
+    s[p] = '\0';
   }
 
   p = 0;
   putint(expr(0));
   putstring(cr);
+  return 0;
 }
-
-
-
 

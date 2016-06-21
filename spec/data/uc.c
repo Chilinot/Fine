@@ -14,8 +14,7 @@ int getint(void){
   return i;
 }
 
-
 int getstring(char s[]) {
-  scanf("%s",s);
+  return scanf("%s",s);
 }
 

@@ -4,7 +4,7 @@
 
 void putstring(char s[]);
 
-char eol[1];
+char eol[2];
 int n;
 
 
@@ -19,11 +19,11 @@ void bubble(char a[]) {
   while (i>0) {
     j = 0;
     while (j<i) {
-      if (a[j] > a[j+1]) { 
-	  t = a[j];
-	  a[j] = a[j+1];
-	  a[j+1] = t;
-	}
+      if (a[j] > a[j+1]) {
+    t = a[j];
+    a[j] = a[j+1];
+    a[j+1] = t;
+  }
       j = j + 1;
     }
     putstring (a);
@@ -33,28 +33,29 @@ void bubble(char a[]) {
 }
 
 int main(void)
-{ 
+{
   char s[27];
   int i;
   char t;
   int q;
 
   eol[0] = '\n';
-  eol[1] = 0;
+  eol[1] = (char)0;
 
   n = 26;
 
-  s[n] = 0;
+  s[n] = (char)0;
 
   // Fill the string with a permutation of the characters a-z
   i = 0;
   q = 11;
   while (i<n) {
-    t = q - (q / 26)*26; // q mod 26
+    t = (char)(q - (q / 26)*26); // q mod 26
     s[i] = 'a'+t;
     i = i + 1;
     q = q + 17;
   }
 
   bubble(s);
+  return 0;
 }

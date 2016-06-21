@@ -10,4 +10,5 @@ int main(void) {
   bar = 54321;
   putint(foo);
   putint(bar);
+  return 0;
 }

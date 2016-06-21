@@ -15,7 +15,7 @@ int main(void) {
 
   char name[80];
   int age;
-  
+
   nameq[0]='Y';
   nameq[1]='o';
   nameq[2]='u';
@@ -27,7 +27,7 @@ int main(void) {
   nameq[8]='e';
   nameq[9]='?';
   nameq[10]=' ';
-  nameq[11]=0;
+  nameq[11]='\0';
 
   ageq[0]='Y';
   ageq[1]='o';
@@ -38,7 +38,7 @@ int main(void) {
   ageq[6]='g';
   ageq[7]='e';
   ageq[8]=' ';
-  ageq[9]=0;
+  ageq[9]='\0';
 
   youare[0]='Y';
   youare[1]='o';
@@ -49,17 +49,17 @@ int main(void) {
   youare[6]='e';
   youare[7]=':';
   youare[8]=' ';
-  youare[9]=0;
-  
+  youare[9]='\0';
+
   cr[0] = '\n';
-  cr[1] = 0;
+  cr[1] = '\0';
 
   putstring(nameq);
   getstring(name);
-  
+
   putstring(ageq);
   age = getint();
-  
+
   putstring(youare);
   putstring(name);
   putstring(cr);
@@ -68,5 +68,5 @@ int main(void) {
   putint(age);
   putstring(cr);
 
-
+  return 0;
 }
