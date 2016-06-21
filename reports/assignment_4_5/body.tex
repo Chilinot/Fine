@@ -29,10 +29,10 @@ The second statement is a return instruction, which takes an expression or ident
 \section{Code Generation}
 
 %TODO How is the LLVM code generated out of the IR structure?
-After the IR has been constructed, converting this to proper LLVM-code is very straightforward. Because our IR is so close to LLVM already each instruction can be translated straight to LLVM-code without any further pre-processing.
+After the IR has been constructed, converting this to proper LLVM-assembly is very straightforward. Because our IR is so close to LLVM already each instruction can be translated straight to LLVM-assembly without any further pre-processing.
 
 %TODO  - Walking down the IR-tree etc.
-Generating the LLVM-code is similar to generating the IR. Iterate over the IR-list constructed from the AST and call "generate\_llvm" on each entry. Each call to this method returns a string that represents the LLVM-code for that particular instruction. Then concatenate all strings together to form the complete program.
+Generating the LLVM-assembly is similar to generating the IR. Iterate over the IR-list constructed from the AST and call "generate\_llvm" on each entry. Each call to this method returns a string that represents the LLVM-assembly for that particular instruction. Then concatenate all strings together to form the complete program.
 
 \subsection{LLVM Structure}
 
