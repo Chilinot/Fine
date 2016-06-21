@@ -106,7 +106,7 @@ An example of a global allocation that is equivalent to listing \ref{lst:example
 The difference in allocation between scalar variables and arrays in LLVM is miniscule. The only difference being is the type specified when defining them. An example of both a scalar variable and an array definition in LLVM can be seen in listing \ref{lst:scalar_array}.
 
 %In order to access elements inside arrays you first have to calculate a pointer to that element using a call to "getelementptr". When you have the pointer you can access it just as you access a scalar in LLVM.
-To access the elements of an array, a call to "getelementptr" has to be made. This call takes a reference to the array, an offset, and an index. It then returns a pointer to the element at that index and offset in the given array which can be used as a regular variable is used in LLVM.
+To access the elements of an array, a call to "getelementptr" has to be made. This call takes a reference to the array, an offset, and an index. It then returns a pointer to the element at that index and offset in the given array which can then be used as a regular variable is used in LLVM.
 
 When arrays are used as arguments in function calls, they are passed as reference to the function, which then have to calculate the element pointers it needs from the array.
 
