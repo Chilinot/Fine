@@ -157,7 +157,7 @@ define i32 @main() {
 uc_operator_program("+") => llvm_operator_program("add"),
 uc_operator_program("-") => llvm_operator_program("sub"),
 uc_operator_program("*") => llvm_operator_program("mul"),
-uc_operator_program("/") => llvm_operator_program("div"),
+uc_operator_program("/") => llvm_operator_program("sdiv"),
 uc_operator_program("==") => llvm_boolean_program("eq"),
 uc_operator_program("!=") => llvm_boolean_program("ne"),
 uc_operator_program("<") => llvm_boolean_program("slt"),

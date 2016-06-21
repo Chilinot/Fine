@@ -169,7 +169,7 @@ class Binop < Struct.new(:type, :op1, :op2)
             Add         => "add",
             Sub         => "sub",
             Mul         => "mul",
-            Div         => "div",
+            Div         => "sdiv",
             LessThen    => "icmp slt",
             GreaterThen => "icmp sgt",
             LessEqual   => "icmp sle",
