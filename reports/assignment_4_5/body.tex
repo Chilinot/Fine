@@ -40,7 +40,11 @@ Generating the LLVM-code is similar to generating the IR. Iterate over the IR-li
 The structure of the LLVM assembly language is very close to ordinary assembly with the exception of some high-level functionality such as strict typing and functions.
 
 %TODO How does it compare to assembler such as MIPS?
+
+\subsection{Benefits of LLVM}
 %TODO What are the benefits of using LLVM instead of MIPS?
+By outputting LLVM-assembly instead of MIPS-assembly the compiler is able to target a wide range of hardware that can be targeted using LLVM; instead of only being bound to a single instruction set architecture.
+It will also be able to leverage the tremendous work put into the LLVM framework on generating highly optimized code.
 
 \subsection{Control Flow Statements}
 
