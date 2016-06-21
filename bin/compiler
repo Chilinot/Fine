@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+
+require_relative "../lib/parser/parser.rb"
+require_relative "../lib/semantic/semantic_analysis.rb"
+require_relative "../lib/utils.rb"
+require_relative "../lib/ir/ir.rb"
+require_relative "../lib/code/code_generation.rb"
+
+require 'ostruct'
+require 'optparse'
+require 'fileutils'
+
+def parse_args args
+    options = OpenStruct.new
+    OptionParser.new do |opts|
+      opts.banner = "Usage: compiler [options] filename"
+
+      opts.on("-o", "--output FILENAME", "output file") do |file|
+        options.output_file = file
+      end
+      opts.on("--emit-llvm", "emit llvm") do |v|
+        options.emit_llvm = v
+      end
+      opts.on("--emit-asm", "emit asm") do |v|
+        options.emit_asm = v
+      end
+    end.parse!
+    options
+end
+
+def main
+    options = parse_args ARGV
+    num_args = ARGV.count
+
+    if num_args == 1
+        filename = ARGV[0]
+
+        unless options.output_file
+            options.output_file = File.basename(filename, ".*")
+        end
+
+        compile options, filename
+    end
+end
+
+def compile options, uc_filename
+    begin
+        puts "compiling #{uc_filename} to #{options.output_file}"
+        content = read_file uc_filename
+
+        ast = Parser.new.parse content
+        if semantic_analysis(ast)
+            ir = generate_ir ast
+            llvm = generate_llvm ir
+
+            # setup outout file
+            filename = options.output_file
+
+            # emit llvm
+            llvm_filename = filename + ".ll"
+            write_file(llvm_filename, llvm)
+
+            # emit asm
+            asm_filename = filename + ".s"
+            status = llvm_file_to_asm_file llvm_filename, asm_filename
+            exit 1 unless status
+
+            # emit executable
+            exe_filename = filename
+            status = asm_file_to_exe_file asm_filename, exe_filename
+            exit 2 unless status
+
+            # remove intermediate files
+            FileUtils.rm llvm_filename unless options.emit_llvm
+            FileUtils.rm asm_filename unless options.emit_asm
+        end
+        puts
+    rescue EncodingError => e
+        puts "invalid file encoding"
+        puts
+    rescue Lexer::LexicalError => e
+        puts e
+        puts
+    rescue Parser::SyntaxError => e
+        puts e
+        puts
+    rescue SemanticError => e
+        puts e
+        puts
+    end
+end
+
+main
