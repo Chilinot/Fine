@@ -82,18 +82,14 @@ The difference in allocation between scalar variables and arrays in LLVM is mini
 %In order to access elements inside arrays you first have to calculate a pointer to that element using a call to "getelementptr". When you have the pointer you can access it just as you access a scalar in LLVM.
 To access the elements of an array, a call to "getelementptr" has to be made. This call takes a reference to the array, an offset, and an index. It then returns a pointer to the element at that index and offset in the given array which can be used as a regular variable is used in LLVM.
 
+When arrays are used as arguments in function calls, they are passed as reference to the function, which then have to calculate the element pointers it needs from the array.
+
 \lstinputlisting[float, label=lst:scalar_array, caption={
   Example of stack allocation of a variable and an array in LLVM. The equivalent $\mu$C-code can be seen in the comments in the example.
 }]{scalar_array.ll}
 
-%TODO if you map temporaries to registers, and if so, how
-
 % Other notes:
-%TODO Stack allocations
-%TODO Global allocations
-%TODO Arrays?
 %TODO How are arrays passed in function calls?
-%TODO How do we access regular allocations, store, load etc.
 %TODO How do we access array-elements? Store, load etc
 %TODO Temporaries and their counters
 
