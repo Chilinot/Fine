@@ -77,6 +77,13 @@ An example of a global allocation that is equivalent to listing \ref{lst:example
 }]{global_allocation.ll}
 
 % Scalar vs array variables
+The difference in allocation between scalar variables and arrays in LLVM is miniscule. The only difference being is the type specified when defining them. An example of both a scalar variable and an array definition in LLVM can be seen in listing \ref{lst:scalar_array}.
+
+In order to access elements inside arrays you first have to calculate a pointer to that element using a call to "getelementptr". When you have the pointer you can access it just as you access a scalar in LLVM.
+
+\lstinputlisting[float, label=lst:scalar_array, caption={
+  Example of stack allocation of variable and array in LLVM.
+}]{scalar_array.ll}
 
 %TODO if you map temporaries to registers, and if so, how
 

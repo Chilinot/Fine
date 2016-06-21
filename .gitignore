@@ -18,3 +18,4 @@ reports/*/*
 !reports/assignment_4_5/example.ir
 !reports/assignment_4_5/stack_allocation.ll
 !reports/assignment_4_5/global_allocation.ll
+!reports/assignment_4_5/scalar_array.ll
