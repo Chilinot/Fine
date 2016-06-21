@@ -16,7 +16,7 @@ describe "lexer" do
                                                           [:INT_LITERAL, 1]]
     end
     it "tokenizes character literals" do
-        expect(Lexer.new.tokenize("'a' '1' '\\n'")).to eq [[:CHAR_LITERAL, "a"], [:CHAR_LITERAL, "1"], [:CHAR_LITERAL, "\\n"]]
+        expect(Lexer.new.tokenize("'a' '1' '\\n'")).to eq [[:CHAR_LITERAL, "a"], [:CHAR_LITERAL, "1"], [:CHAR_LITERAL, "\n"]]
     end
     it "handles incorrect character literals" do
         expect(tokenize_error_message("'foo'")).to eq "Lexical error on line 1: invalid token |'foo'|"

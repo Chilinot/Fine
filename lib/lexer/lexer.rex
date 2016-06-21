@@ -1,7 +1,8 @@
 class Lexer
 macro
     INT_LITERAL                         \d+
-    CHAR_LITERAL                        ('\w'|'\s'|'\\n')
+    CHAR_LITERAL                        ('[^']')
+    CHAR_LITERAL_SPECIAL                ('\\[^']')
     IDENTIFIER                          [a-zA-Z_]\w*
     WHITESPACE                          \s+
     NEWLINE                             \n
@@ -29,6 +30,9 @@ rule
     {WHITESPACE}
     {INT_LITERAL}                       { [:INT_LITERAL, make_token(text.to_i)] }
     {CHAR_LITERAL}                      { [:CHAR_LITERAL, make_token(text[1..-2])] }
+    {CHAR_LITERAL_SPECIAL}              { unescaped = UNESCAPE_CHARACTERS[text[1..-2]]
+                                          raise LexicalError.new(@current_line, "unrecognized token |#{text}|") if unescaped.nil?
+                                          [:CHAR_LITERAL, make_token(unescaped)] }
     {IDENTIFIER_STARTING_WITH_KEYWORD}  { [:IDENTIFIER, make_token(text)] }
     {KEYWORD}                           { [text.upcase.to_sym, make_token(text)] }
     {IDENTIFIER}                        { [:IDENTIFIER, make_token(text)] }
@@ -38,6 +42,14 @@ rule
     {ERROR}                             { raise LexicalError.new(@current_line, "unrecognized token |#{text}|") }
 
 inner
+    UNESCAPE_CHARACTERS = {
+        "\\0" => "\0",
+        "\\n" => "\n",
+        "\\t" => "\t",
+        "\\\\" => "\\",
+        "\\\"" => "\"",
+        "\\\'" => "'",
+    }
     class LexicalError < StandardError
         def initialize(line, error_message)
             @line = line
