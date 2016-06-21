@@ -62,7 +62,7 @@ Some of the benefits gained by outputting LLVM-assembly instead of MIPS-assembly
 Variables are read using load instructions and written to using store instructions. This is similar to regular assembly, but not in the way you allocate them.
 Allocating a local variable on the stack in functions is analogous to how one would allocate memory on the heap in C or similar languages.
 
-An example of stack allocation and usage of local variables in LLVM can bee seen in listing \ref{lst:example_stack_allocation}.
+An example of stack allocation and usage of local variables in LLVM can be seen in listing \ref{lst:example_stack_allocation}.
 
 \lstinputlisting[float, label=lst:example_stack_allocation, caption={
   Example of stack allocation and usage of local variables in LLVM-assembly. The function "foo" contains a single allocation of an integer with the size of 32 bits. It then stores a value in the allocated space, loads it, and returns the value stored in it. On line four in the example it loads the value of the local variable into a temporary, and then returns that value on line five.
@@ -70,7 +70,7 @@ An example of stack allocation and usage of local variables in LLVM can bee seen
 
 % Local vs global variables
 A global variable is never allocated on the stack, thus its initialization is different from local variables. In LLVM-assembly they are also annotated differently from local variables and temporaries.
-An example of a global allocation that is equivalent to listing \ref{lst:example_stack_allocation} can bee seen in listing \ref{lst:example_global_allocation}.
+An example of a global allocation that is equivalent to listing \ref{lst:example_stack_allocation} can be seen in listing \ref{lst:example_global_allocation}.
 
 \lstinputlisting[float, label=lst:example_global_allocation, caption={
   Example of global allocation and usage in LLVM-assembly. The code is equivalent to listing \ref{lst:example_stack_allocation}.
@@ -79,10 +79,11 @@ An example of a global allocation that is equivalent to listing \ref{lst:example
 % Scalar vs array variables
 The difference in allocation between scalar variables and arrays in LLVM is miniscule. The only difference being is the type specified when defining them. An example of both a scalar variable and an array definition in LLVM can be seen in listing \ref{lst:scalar_array}.
 
-In order to access elements inside arrays you first have to calculate a pointer to that element using a call to "getelementptr". When you have the pointer you can access it just as you access a scalar in LLVM.
+%In order to access elements inside arrays you first have to calculate a pointer to that element using a call to "getelementptr". When you have the pointer you can access it just as you access a scalar in LLVM.
+To access the elements of an array, a call to "getelementptr" has to be made. This call takes a reference to the array, an offset, and an index. It then returns a pointer to the element at that index and offset in the given array which can be used as a regular variable is used in LLVM.
 
 \lstinputlisting[float, label=lst:scalar_array, caption={
-  Example of stack allocation of variable and array in LLVM.
+  Example of stack allocation of a variable and an array in LLVM. The equivalent $\mu$C-code can be seen in the comments in the example.
 }]{scalar_array.ll}
 
 %TODO if you map temporaries to registers, and if so, how
