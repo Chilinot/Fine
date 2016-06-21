@@ -59,6 +59,25 @@ Some of the benefits gained by outputting LLVM-assembly instead of MIPS-assembly
 
 % FROM ASSIGNMENT:
 %TODO how variable references are translated, and how you handle the difference between local and global variables, and the difference between scalar and array variables
+Variables are read using load instructions and written to using store instructions. This is similar to regular assembly, but not in the way you allocate them.
+Allocating a local variable on the stack in functions is analogous to how one would allocate memory on the heap in C or similar languages.
+
+An example of stack allocation and usage of local variables in LLVM can bee seen in listing \ref{lst:example_stack_allocation}.
+
+\lstinputlisting[float, label=lst:example_stack_allocation, caption={
+  Example of stack allocation and usage of local variables in LLVM-assembly. The function "foo" contains a single allocation of an integer with the size of 32 bits. It then stores a value in the allocated space, loads it, and returns the value stored in it. On line four in the example it loads the value of the local variable into a temporary, and then returns that value on line five.
+}]{stack_allocation.ll}
+
+% Local vs global variables
+A global variable is never allocated on the stack, thus its initialization is different from local variables. In LLVM-assembly they are also annotated differently from local variables and temporaries.
+An example of a global allocation that is equivalent to listing \ref{lst:example_stack_allocation} can bee seen in listing \ref{lst:example_global_allocation}.
+
+\lstinputlisting[float, label=lst:example_global_allocation, caption={
+  Example of global allocation and usage in LLVM-assembly. The code is equivalent to listing \ref{lst:example_stack_allocation}.
+}]{global_allocation.ll}
+
+% Scalar vs array variables
+
 %TODO if you map temporaries to registers, and if so, how
 
 % Other notes:
@@ -67,7 +86,7 @@ Some of the benefits gained by outputting LLVM-assembly instead of MIPS-assembly
 %TODO Arrays?
 %TODO How are arrays passed in function calls?
 %TODO How do we access regular allocations, store, load etc.
-%TODO How do we access array-elements? store load etc
+%TODO How do we access array-elements? Store, load etc
 %TODO Temporaries and their counters
 
 \section{Design Decisions}

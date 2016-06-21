@@ -16,3 +16,5 @@ reports/*/*
 !reports/*/Makefile
 !reports/assignment_4_5/example.c
 !reports/assignment_4_5/example.ir
+!reports/assignment_4_5/stack_allocation.ll
+!reports/assignment_4_5/global_allocation.ll
