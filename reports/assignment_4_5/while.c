@@ -1,8 +1,7 @@
 int main(void) {
     int i;
-    i = 10;
-    while (i > 0) {
-      i = i + 1;
+    while (i) {
+      i = 42;
     }
     return 0;
 }
