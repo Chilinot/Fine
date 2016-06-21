@@ -17,7 +17,12 @@ class Builtin
             ExternFunctionDeclarationNode.new(:INT, "getint", []),
             ExternFunctionDeclarationNode.new(:INT, "getstring", [ArrayDeclarationNode.new(:CHAR, "s")]),
         ]
-        builtin_functions.include? function
+        builtin_functions.any? do |f|
+            f.type == function.type and
+            f.name == function.name and
+            f.formals.count == function.formals.count and
+            (function.formals.count == 0 or (f.formals[0].type == function.formals[0].type))
+        end
     end
     def generate_llvm formal_map = nil
 header = '%struct._IO_FILE = type { i32, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, %struct._IO_marker*, %struct._IO_FILE*, i32, i32, i64, i16, i8, [1 x i8], i8*, i64, i8*, i8*, i8*, i8*, i64, i32, [20 x i8] }
@@ -71,12 +76,12 @@ define i32 @getstring(i8* %s) {
     ret i32 %3
 }
 '
-    llvm = ""
-    llvm += header unless @builtin.empty?
-    llvm += putint if @builtin.include? "putint"
-    llvm += putstring if @builtin.include? "putstring"
-    llvm += getint if @builtin.include? "getint"
-    llvm += getstring if @builtin.include? "getstring"
+        llvm = ""
+        llvm += header unless @builtin.empty?
+        llvm += putint if @builtin.include? "putint"
+        llvm += putstring if @builtin.include? "putstring"
+        llvm += getint if @builtin.include? "getint"
+        llvm += getstring if @builtin.include? "getstring"
         return llvm
     end
 end
