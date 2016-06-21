@@ -209,7 +209,7 @@ class ArrayElement < Struct.new(:type, :name, :num_elements, :index)
             array_type = "[#{num_elements} x #{type}]*"
             "getelementptr inbounds #{array_type} #{identifier}, i32 0, i32 #{index.generate_llvm(formal_map)}"
         else
-            array_type = "i32*" unless num_elements
+            array_type = "#{type}*" unless num_elements
             "getelementptr inbounds #{array_type} #{identifier}, i32 #{index.generate_llvm(formal_map)}"
         end
     end
