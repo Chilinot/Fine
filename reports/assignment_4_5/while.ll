@@ -1,4 +1,3 @@
-
 define i32 @main() {
     %i = alloca i32
     br label %while_start1
