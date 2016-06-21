@@ -49,6 +49,22 @@ Some of the benefits gained by outputting LLVM-assembly instead of MIPS-assembly
 % FROM ASSIGNMENT:
 %TODO how control flow statements are translated
 
+\lstinputlisting[float, label=lst:while_c, caption={
+  Example program with while statment in $\mu$C.
+}]{while.c}
+
+\lstinputlisting[float, label=lst:while_ll, caption={
+  Program in listing \ref{lst:while_c} compiled to llvm.
+}]{while.ll}
+
+\lstinputlisting[float, label=lst:if_c, caption={
+  Example program with else-if statment in $\mu$C.
+}]{if.c}
+
+\lstinputlisting[float, label=lst:if_ll, caption={
+  Program in listing \ref{lst:if_c} compiled to llvm.
+}]{if.ll}
+
 % Other notes:
 %TODO How do we handle if-statements?
 %TODO How do we handle while-statements?
