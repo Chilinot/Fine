@@ -148,8 +148,19 @@ When compiling a program that relies on the builtin "putint", "putstring", "geti
 %TODO How do we flatten arithmetic expressions? Are there any design decisions there?
 %TODO How do we handle references to global variables inside functions? How do we determine if it is referencing a local or global?
 
-\section{Usage}
+\section{Using The Compiler}
 %TODO How do you use the compiler?
+
+\subsection{Requirements}
+
+In order to run the compiler the following programs need to be installed:
+\begin{itemize}
+  \item LLVM framework version 3.4
+  \item gcc - GNU project C and C++ compiler
+  \item Ruby programming language, version 2+
+\end{itemize}
+
+\subsection{Usage}
 
 The compiler can be used from the command line. The following instruction will assume that the \texttt{bin/} directory is in your path. The compiler expects a $\mu$C file as input and will generate an executable binary file.
 
