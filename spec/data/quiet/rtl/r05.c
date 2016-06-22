@@ -6,4 +6,5 @@ int a[10];
 
 int main(void ) {
   f(a);
+  return 0;
 }

@@ -5,6 +5,7 @@ int main(void) {
 
   a[3] = a[5]+7;
 
-  b[3] = b[5]+7;
+  b[3] = b[5]+(char)7;
+  return 0;
 }
 

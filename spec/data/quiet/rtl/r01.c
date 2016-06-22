@@ -6,8 +6,9 @@ int main(void) {
   char w;
 
   x = 42;
-  y = 43;
+  y = (char)43;
 
-  z = 'A';
+  z = (int)'A';
   w = '\n';
+  return 0;
 }

@@ -4,4 +4,5 @@ int f(int x, int y) {
 
 int main(void){
   f(2,3);
+  return 0;
 }
