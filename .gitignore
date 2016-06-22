@@ -23,3 +23,4 @@ reports/*/*
 !reports/assignment_4_5/if.ll
 !reports/assignment_4_5/while.c
 !reports/assignment_4_5/while.ll
+!reports/assignment_4_5/output_and_generated_llvm.txt
