@@ -162,6 +162,12 @@ In order to run the compiler the following programs need to be installed:
 
 \subsection{Usage}
 
+In order to use the compiler for the first time you have to install the ruby dependencies and construct the lexer and the parser. This is done by issuing the following two commands:
+\begin{lstlisting}[language=bash,numbers=none]
+    $\$$ bundle install
+    $\$$ rake
+\end{lstlisting}
+
 The compiler can be used from the command line. The following instruction will assume that the \texttt{bin/} directory is in your path. The compiler expects a $\mu$C file as input and will generate an executable binary file.
 
 The following example will compile and link \texttt{fib.c} into \texttt{fib}:
