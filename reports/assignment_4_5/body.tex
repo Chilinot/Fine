@@ -136,6 +136,26 @@ When compiling a program that relies on the builtin "putint", "putstring", "geti
 
 \section{Usage}
 %TODO How do you use the compiler?
+
+The compiler can be used from the command line. The following instruction will assume that the \texttt{bin/} directory is in your path. The compiler expects a $\mu$C file as input and will generate an executable binary file.
+
+The following example will compile and link \texttt{fib.c} into \texttt{fib}:
+\begin{lstlisting}[language=bash,numbers=none]
+    $\$$ ucc fib.c
+\end{lstlisting}
+
+It is also possible to specify the name of the output file. Use the following command to name the output file \texttt{fibonacci}:
+\begin{lstlisting}[language=bash,numbers=none]
+    $\$$ ucc -o fibonacci fib.c
+\end{lstlisting}
+
+The compiler can also emit both llvm and asm files. Use \texttt{--emit-llvm} to emit llvm and \texttt{--emit-asm} to emit asm. See the following example:
+\begin{lstlisting}[language=bash,numbers=none]
+    $\$$ ucc fib.c --emit-llvm --emit-asm
+\end{lstlisting}
+
+Use \texttt{-h} or \texttt{--help} flags for more options.
+
 %TODO What are the generated output files?
 %TODO How do you execute the generated .ll files?
 %TODO How do you generate a binary out of the .ll files?
