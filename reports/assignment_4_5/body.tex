@@ -125,6 +125,8 @@ When arrays are used as arguments in function calls, they are passed as referenc
 We made our intermediate representation consciously similar to the expected output of the LLVM-assembly in order to simplify the translation from IR to LLVM. By doing this, the number of IR-instructions is almost identical to the number of LLVM-instructions produced in the final result.
 
 %TODO Our solution to putint, putstring etc. Where we include a header in the LLVM code if needed.
+When compiling a program that relies on the builtin "putint", "putstring", "getint", etc. functions the compiler will auto-insert a header into the generated LLVM-assembly. This header contains the pre-compiled assembly for the builtin functions required. This is because the functions rely on C-syntax that our compiler is not able to compile, such as pointers and variable arguments. This could have posed an issue if LLVM had not been as high level as it is. Some basic testing has shown that this header compiles to the same assembly on different machines running different versions of LLVM.
+
 %TODO How do we handle the creation of new basic blocks in LLVM after a return?
 %TODO Name of the output file and how it is handled using temp files etc.
 
