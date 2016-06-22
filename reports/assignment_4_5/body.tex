@@ -141,9 +141,14 @@ When compiling a program that relies on the builtin "putint", "putstring", "geti
 %TODO How do you generate a binary out of the .ll files?
 
 \section{Future Work}
+
+A more robust solution to our pre-compiled header would have been to replace the pre-compiled assembly with code our compiler could actually handle. Unfortunately we were not able to succeed in doing that. Which is why we chose the more "unstable" solution. This could be solved if given more time. A possible solution would be to actually add support for pointers and variable arguments to the compiler allowing it to compile the C-code required to use the builtin functions.
+
 %TODO Is there anything we could have improved if given more time?
 %TODO What could be improved?
+
 %TODO Can the compiler be used to cross-compile?
+Since our compiler is outputting LLVM-assembly it is possible for it to compile code for a different architecture than the one it is running on. We have not currently added support for defining the target architecture to the compiler, but that is something that could easily be implemented since it is nothing that requires any work on our part.
 
 \section{Conclusions}
 
